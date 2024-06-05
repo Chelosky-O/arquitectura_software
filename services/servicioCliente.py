@@ -55,23 +55,26 @@ def handle_request(servicio, datos):
     db_connection.close()
     return response
 
-def main():
-    while True:
-        # Create a TCP/IP socket
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        bus_address = ('localhost', 5000)
-        print('connecting to {} port {}'.format(*bus_address))
-        sock.connect(bus_address)
+# Create a TCP/IP socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+bus_address = ('localhost', 5000)
+print('starting up on {} port {}'.format(*bus_address))
+sock.bind(bus_address)
+sock.listen(1)
 
+try:
+    while True:
+        print('waiting for a connection')
+        client_socket, client_address = sock.accept()
         try:
+            print('connection from', client_address)
+
             while True:
-                print('waiting for a connection')
-                # Receive the message
                 amount_received = 0
-                amount_expected = int(sock.recv(5).decode())
+                amount_expected = int(client_socket.recv(5))
                 data = b''
                 while amount_received < amount_expected:
-                    chunk = sock.recv(amount_expected - amount_received)
+                    chunk = client_socket.recv(amount_expected - amount_received)
                     if not chunk:
                         break
                     data += chunk
@@ -92,9 +95,9 @@ def main():
                 response_length = len(response)
                 message = f"{response_length:05}{response}".encode()
                 print('sending {!r}'.format(message))
-                sock.sendall(message)
+                client_socket.sendall(message)
         finally:
-            sock.close()
-
-if __name__ == "__main__":
-    main()
+            client_socket.close()
+finally:
+    print('closing socket')
+    sock.close()
