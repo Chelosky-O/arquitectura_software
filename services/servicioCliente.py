@@ -55,34 +55,31 @@ def handle_request(servicio, datos):
     db_connection.close()
     return response
 
-# Create a TCP/IP socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-bus_address = ('localhost', 5000)
-print('starting up on {} port {}'.format(*bus_address))
-sock.bind(bus_address)
-sock.listen(1)
-
-try:
+def main():
     while True:
-        print('waiting for a connection')
-        client_socket, client_address = sock.accept()
-        try:
-            print('connection from', client_address)
+        # Create a TCP/IP socket
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        bus_address = ('localhost', 5000)
+        print('connecting to {} port {}'.format(*bus_address))
+        sock.connect(bus_address)
 
+        try:
             while True:
+                print('waiting for a connection')
+                # Receive the message
                 amount_received = 0
-                amount_expected = int(client_socket.recv(5))
+                amount_expected = int(sock.recv(5).decode())
                 data = b''
                 while amount_received < amount_expected:
-                    chunk = client_socket.recv(amount_expected - amount_received)
+                    chunk = sock.recv(amount_expected - amount_received)
                     if not chunk:
                         break
                     data += chunk
                     amount_received += len(chunk)
-                
+
                 if not data:
                     break
-                
+
                 print("Processing ...")
                 print('received {!r}'.format(data))
 
@@ -95,9 +92,9 @@ try:
                 response_length = len(response)
                 message = f"{response_length:05}{response}".encode()
                 print('sending {!r}'.format(message))
-                client_socket.sendall(message)
+                sock.sendall(message)
         finally:
-            client_socket.close()
-finally:
-    print('closing socket')
-    sock.close()
+            sock.close()
+
+if __name__ == "__main__":
+    main()
