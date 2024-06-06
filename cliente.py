@@ -30,11 +30,51 @@ def send_message(service, action, data):
 # Funciones para la gestión de equipos
 def obtener_info_equipo(id_equipo):
     response = send_message("EQUIP", "CODIU", str(id_equipo))
-    print(f"Respuesta: {response}")
+    
+    response_parts = response.split(',')
+    
+    # Extract the required information
+    id = response_parts[1]
+    nombre = response_parts[2]
+    descripcion = response_parts[3]
+    tipo = response_parts[4]
+    tarifa = response_parts[5]
+    
+    # Print the formatted information
+    print(f"ID: {id}")
+    print(f"Nombre: {nombre}")
+    print(f"Descripcion: {descripcion}")
+    print(f"Tipo: {tipo}")
+    print(f"Tarifa: {tarifa}")
+    #print(f"Respuesta: {response}")
 
 def obtener_info_todos_equipos():
     response = send_message("EQUIP", "CODIT", "")
-    print(f"Respuesta: {response}")
+    response = response[10:]    
+    #Split the response string by '|'
+    equipos = response.split('|')
+    
+    # Iterate through each user and print the formatted information
+    for equipo in equipos:
+        #print(equipo)
+        response_parts = equipo.split(',')
+        
+        # Extract the required information
+        id = response_parts[0]
+        nombre = response_parts[1]
+        descripcion = response_parts[2]
+        tipo = response_parts[3]
+        tarifa = response_parts[4]
+
+        # Print the formatted information
+        print(f"ID: {id}")
+        print(f"Nombre: {nombre}")
+        print(f"Descripcion: {descripcion}")
+        print(f"Tipo: {tipo}")
+        print(f"Tarifa: {tarifa}")
+        print("-----------------")
+
+    #print(f"Respuesta: {response}")
 
 def añadir_equipo(nombre, descripcion, tipo, tarifa):
     data = f"{nombre},{descripcion},{tipo},{tarifa}"
@@ -67,11 +107,43 @@ def modificar_usuario(nombre, rut, email):
 
 def obtener_info_usuario(rut):
     response = send_message("USUAR", "CODIU", str(rut))
-    print(f"Respuesta: {response}")
+    
+    response_parts = response.split(',')
+    
+    # Extract the required information
+    nombre = response_parts[1]
+    rut = response_parts[2]
+    email = response_parts[3]
+    
+    # Print the formatted information
+    print(f"Nombre: {nombre}")
+    print(f"RUT: {rut}")
+    print(f"Email: {email}")
+    #print(f"Respuesta: {response}")
 
 def obtener_info_todos_usuarios():
     response = send_message("USUAR", "CODIT", "")
-    print(f"Respuesta: {response}")
+    #Split the response string by '|'
+    response = response[10:]
+    usuarios = response.split('|')
+    
+    # Iterate through each user and print the formatted information
+    for usuario in usuarios:
+        #print(usuario)
+        response_parts = usuario.split(',')
+
+        # Extract the required information
+        nombre = response_parts[0]
+        rut = response_parts[1]
+        email = response_parts[2]
+        
+        # Print the formatted information
+        print(f"Nombre: {nombre}")
+        print(f"RUT: {rut}")
+        print(f"Email: {email}")
+        print("-----------------")
+    
+    #print(f"Respuesta: {response}")
 
 # Funciones para la gestión de alimentos
 def agregar_alimento(nombre, precio, stock):
@@ -90,11 +162,43 @@ def modificar_alimento(id_alimento, nombre, precio, stock):
 
 def obtener_info_alimento(id_alimento):
     response = send_message("ALIME", "CODIU", str(id_alimento))
-    print(f"Respuesta: {response}")
+    response_parts = response.split(',')
+    
+    # Extract the required information
+    id = response_parts[1]
+    nombre = response_parts[2]
+    precio = response_parts[3]
+    stock = response_parts[4]
+    
+    # Print the formatted information
+    print(f"id: {id}")
+    print(f"Nombre: {nombre}")
+    print(f"Precio: {precio}")
+    print(f"Stock: {stock}")
+    #print(f"Respuesta: {response}")
 
 def obtener_info_todos_alimentos():
     response = send_message("ALIME", "CODIT", "")
-    print(f"Respuesta: {response}")
+    response = response[10:] 
+    #Split the response string by '|'
+    alimentos = response.split('|')
+    
+    # Iterate through each user and print the formatted information
+    for alimento in alimentos:
+        response_parts = alimento.split(',')
+        
+        id = response_parts[0]
+        nombre = response_parts[1]
+        precio = response_parts[2]
+        stock = response_parts[3]
+        
+        # Print the formatted information
+        print(f"id: {id}")
+        print(f"Nombre: {nombre}")
+        print(f"Precio: {precio}")
+        print(f"Stock: {stock}")
+        print("-----------------")
+    #print(f"Respuesta: {response}")
 
 # Ejemplos de uso
 try:
