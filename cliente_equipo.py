@@ -1,94 +1,92 @@
 import socket
 import sys
-
-def format_message(service_code, data):
-    longitud_datos = len(service_code + data)
-    message = f"{longitud_datos:05}{service_code}{data}".encode()
-    return message
-
-def send_message(sock, message, expect_response=True):
-    print(f'Sending message: {message}')
-    sock.sendall(message)
-    
-    if expect_response:
-        # Look for the response
-        print("Waiting for transaction")
-        amount_received = 0
-        amount_expected = int(sock.recv(5))
-        data = b''
-        while amount_received < amount_expected:
-            chunk = sock.recv(amount_expected - amount_received)
-            amount_received += len(chunk)
-            data += chunk
-        print("Received response: {!r}".format(data.decode()))
+import json
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 # Connect the socket to the port where the bus is listening
 bus_address = ('localhost', 5000)
-print('Connecting to {} port {}'.format(*bus_address))
+print('connecting to {} port {}'.format(*bus_address))
 sock.connect(bus_address)
 
+def send_message(service, action, data):
+    message_data = f"{action}{data}"
+    message = f"{len(message_data):05}{service}{message_data}".encode()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    bus_address = ('localhost', 5000)
+    sock.connect(bus_address)
+    try:
+        sock.sendall(message)
+        amount_expected = int(sock.recv(5))
+        amount_received = 0
+        response = b''
+        while amount_received < amount_expected:
+            chunk = sock.recv(amount_expected - amount_received)
+            amount_received += len(chunk)
+            response += chunk
+    finally:
+        sock.close()
+    return response.decode()
+
+def obtener_info_equipo(id_equipo):
+    response = send_message("EQUIP", "CODIU", str(id_equipo))
+    print(f"Respuesta: {response}")
+
+def obtener_info_todos_equipos():
+    response = send_message("EQUIP", "CODIT", "")
+    print(f"Respuesta: {response}")
+
+def añadir_equipo(nombre, descripcion, tipo, tarifa):
+    data = f"{nombre},{descripcion},{tipo},{tarifa}"
+    response = send_message("EQUIP", "CODAE", data)
+    print(f"Respuesta: {response}")
+
+def eliminar_equipo(id_equipo):
+    response = send_message("EQUIP", "CODEE", str(id_equipo))
+    print(f"Respuesta: {response}")
+
+def modificar_equipo(id_equipo, nombre, descripcion, tipo, tarifa):
+    data = f"{id_equipo},{nombre},{descripcion},{tipo},{tarifa}"
+    response = send_message("EQUIP", "CODME", data)
+    print(f"Respuesta: {response}")
+
+# Ejemplos de uso
 try:
     while True:
-        print("\nMenu:")
-        print("1. Crear un equipo (CODAE)")
-        print("2. Obtener información de un equipo (CODIU)")
-        print("3. Obtener información de todos los equipos (CODIT)")
-        print("4. Eliminar equipo (CODEE)")
-        print("5. Modificar equipo (CODME)")
+        print("Menú de opciones:")
+        print("1. Obtener información de un equipo")
+        print("2. Obtener información de todos los equipos")
+        print("3. Añadir equipo")
+        print("4. Eliminar equipo")
+        print("5. Modificar equipo")
         print("6. Salir")
-        choice = input("Elija una opción: ")
-
-        if choice == "1":
-            equipo = input("Nombre del equipo: ")
-            descripcion = input("Descripción del equipo: ")
-            tipo = input("Tipo de equipo: ")
-            tarifa = input("Tarifa del equipo: ")
-            datos = f"{equipo}-{descripcion}-{tipo}-{tarifa}"
-            servicio = "CODAE"
-            message = format_message(servicio, datos)
-            send_message(sock, message)
-        
-        elif choice == "2":
-            id_equipo = input("ID del equipo: ")
-            datos = f"{id_equipo}"
-            servicio = "CODIU"
-            message = format_message(servicio, datos)
-            send_message(sock, message)
-        
-        elif choice == "3":
-            servicio = "CODIT"
-            datos = ""
-            message = format_message(servicio, datos)
-            send_message(sock, message)
-        
-        elif choice == "4":
-            id_equipo = input("ID del equipo: ")
-            datos = f"{id_equipo}"
-            servicio = "CODEE"
-            message = format_message(servicio, datos)
-            send_message(sock, message)
-        
-        elif choice == "5":
-            id_equipo = input("ID del equipo: ")
-            nombre = input("Nuevo nombre del equipo: ")
-            descripcion = input("Nueva descripción del equipo: ")
-            tipo = input("Nuevo tipo de equipo: ")
-            tarifa = input("Nueva tarifa del equipo: ")
-            datos = f"{id_equipo}-{nombre}-{descripcion}-{tipo}-{tarifa}"
-            servicio = "CODME"
-            message = format_message(servicio, datos)
-            send_message(sock, message)
-        
-        elif choice == "6":
-            print("Cerrando el cliente.")
-            message = format_message("CLOSE", "")
-            send_message(sock, message, expect_response=False)
+        option = input("Seleccione una opción: ")
+        if option == "1":
+            id_equipo = input("Ingrese ID del equipo: ")
+            obtener_info_equipo(id_equipo)
+        elif option == "2":
+            obtener_info_todos_equipos()
+        elif option == "3":
+            nombre = input("Ingrese nombre del equipo: ")
+            descripcion = input("Ingrese descripcion del equipo: ")
+            tipo = input("Ingrese tipo del equipo: ")
+            tarifa = input("Ingrese tarifa del equipo: ")
+            añadir_equipo(nombre, descripcion, tipo, tarifa)
+        elif option == "4":
+            id_equipo = input("Ingrese ID del equipo: ")
+            eliminar_equipo(id_equipo)
+        elif option == "5":
+            id_equipo = input("Ingrese ID del equipo: ")
+            nombre = input("Ingrese nombre del equipo: ")
+            descripcion = input("Ingrese descripcion del equipo: ")
+            tipo = input("Ingrese tipo del equipo: ")
+            tarifa = input("Ingrese tarifa del equipo: ")
+            modificar_equipo(id_equipo, nombre, descripcion, tipo, tarifa)
+        elif option == "6":
             break
-        
         else:
-            print("Opción no válida. Por favor, intente de nuevo.")
+            print("Opción no válida")
 finally:
-    print('closing socket')
+    print('Cerrando el cliente')
     sock.close()
