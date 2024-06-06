@@ -73,13 +73,37 @@ def obtener_info_todos_usuarios():
     response = send_message("USUAR", "CODIT", "")
     print(f"Respuesta: {response}")
 
+# Funciones para la gestión de alimentos
+def agregar_alimento(nombre, precio, stock):
+    data = f"{nombre},{precio},{stock}"
+    response = send_message("ALIME", "CODAA", data)
+    print(f"Respuesta: {response}")
+
+def quitar_alimento(id_alimento):
+    response = send_message("ALIME", "CODQA", str(id_alimento))
+    print(f"Respuesta: {response}")
+
+def modificar_alimento(id_alimento, nombre, precio, stock):
+    data = f"{id_alimento},{nombre},{precio},{stock}"
+    response = send_message("ALIME", "CODMA", data)
+    print(f"Respuesta: {response}")
+
+def obtener_info_alimento(id_alimento):
+    response = send_message("ALIME", "CODIU", str(id_alimento))
+    print(f"Respuesta: {response}")
+
+def obtener_info_todos_alimentos():
+    response = send_message("ALIME", "CODIT", "")
+    print(f"Respuesta: {response}")
+
 # Ejemplos de uso
 try:
     while True:
         print("Menú de opciones:")
         print("1. Gestión de equipos")
         print("2. Gestión de usuarios")
-        print("3. Salir")
+        print("3. Gestión de alimentos")
+        print("4. Salir")
         option = input("Seleccione una opción: ")
         
         if option == "1":
@@ -150,6 +174,39 @@ try:
                 print("Opción no válida")
         
         elif option == "3":
+            print("Menú de gestión de alimentos:")
+            print("1. Agregar alimento")
+            print("2. Quitar alimento")
+            print("3. Modificar alimento")
+            print("4. Obtener información de un alimento")
+            print("5. Obtener información de todos los alimentos")
+            print("6. Volver al menú principal")
+            alime_option = input("Seleccione una opción: ")
+            if alime_option == "1":
+                nombre = input("Ingrese nombre del alimento: ")
+                precio = input("Ingrese precio del alimento: ")
+                stock = input("Ingrese stock del alimento: ")
+                agregar_alimento(nombre, precio, stock)
+            elif alime_option == "2":
+                id_alimento = input("Ingrese ID del alimento: ")
+                quitar_alimento(id_alimento)
+            elif alime_option == "3":
+                id_alimento = input("Ingrese ID del alimento: ")
+                nombre = input("Ingrese nombre del alimento: ")
+                precio = input("Ingrese precio del alimento: ")
+                stock = input("Ingrese stock del alimento: ")
+                modificar_alimento(id_alimento, nombre, precio, stock)
+            elif alime_option == "4":
+                id_alimento = input("Ingrese ID del alimento: ")
+                obtener_info_alimento(id_alimento)
+            elif alime_option == "5":
+                obtener_info_todos_alimentos()
+            elif alime_option == "6":
+                continue
+            else:
+                print("Opción no válida")
+        
+        elif option == "4":
             break
         
         else:
