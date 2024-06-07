@@ -23,67 +23,58 @@ sock.connect(bus_address)
 def handle_request(data):
     action = data[:5]
     payload = data[5:]
-    if action == "CODCU":
-        return crear_usuario(payload)
-    elif action == "CODBU":
-        return borrar_usuario(payload)
-    elif action == "CODMU":
-        return modificar_usuario(payload)
-    elif action == "CODIU":
-        return obtener_info_usuario(payload)
+    if action == "CODIU":
+        return obtener_info_equipo(payload)
     elif action == "CODIT":
-        return obtener_info_todos_usuarios()
+        return obtener_info_todos_equipos()
+    elif action == "CODAE":
+        return añadir_equipo(payload)
+    elif action == "CODEE":
+        return eliminar_equipo(payload)
+    elif action == "CODME":
+        return modificar_equipo(payload)
     else:
-        return "USUARNK,Invalid action"
+        return "EQUIPNK, Acción inválida"
 
-def crear_usuario(payload):
-    nombre, rut, email = payload.split(',')
-    query = f"INSERT INTO Clientes (rut, nombre, email) VALUES ('{rut}', '{nombre}', '{email}')"
-    try:
-        cursor.execute(query)
-        db_connection.commit()
-        return "USUAROK,Usuario creado"
-    except mysql.connector.Error as err:
-        return f"USUARNK,Error: {err}"
-
-def borrar_usuario(rut):
-    query = f"DELETE FROM Clientes WHERE rut='{rut}'"
-    try:
-        cursor.execute(query)
-        db_connection.commit()
-        return "USUAROK,Usuario eliminado"
-    except mysql.connector.Error as err:
-        return f"USUARNK,Error: {err}"
-
-def modificar_usuario(payload):
-    rut, nombre, email = payload.split(',')
-    query = f"UPDATE Clientes SET nombre='{nombre}', email='{email}' WHERE rut='{rut}'"
-    try:
-        cursor.execute(query)
-        db_connection.commit()
-        return "USUAROK,Usuario modificado"
-    except mysql.connector.Error as err:
-        return f"USUARNK,Error: {err}"
-
-def obtener_info_usuario(rut):
-    query = f"SELECT * FROM Clientes WHERE rut='{rut}'"
+def obtener_info_equipo(id_equipo):
+    query = f"SELECT * FROM Equipos WHERE id={id_equipo}"
     cursor.execute(query)
     result = cursor.fetchone()
     if result:
-        response = f"USUAROK,{result[1]},{result[0]},{result[2]}"
+        response = f"EQUIPOK,{result[0]},{result[1]},{result[2]},{result[3]},{result[4]}"
     else:
-        response = "USUARNK,Usuario no encontrado"
+        response = "EQUIPNK, Equipos no encontrados"
     return response
 
-def obtener_info_todos_usuarios():
-    query = "SELECT * FROM Clientes"
+def obtener_info_todos_equipos():
+    query = "SELECT * FROM Equipos"
     cursor.execute(query)
     results = cursor.fetchall()
-    response = "USUAROK," + "|".join([f"{row[1]},{row[0]},{row[2]}" for row in results])
+    response = "EQUIPOK," + "|".join([f"{row[0]},{row[1]},{row[2]},{row[3]},{row[4]}" for row in results])
     return response
 
+def añadir_equipo(payload):
+    nombre, descripcion, tipo, tarifa = payload.split(',')
+    query = f"INSERT INTO Equipos (nombre, descripcion, tipo, tarifa) VALUES ('{nombre}', '{descripcion}', '{tipo}', {tarifa})"
+    cursor.execute(query)
+    db_connection.commit()
+    return f"EQUIPOK,{cursor.lastrowid}"
+
+def eliminar_equipo(id_equipo):
+    query = f"DELETE FROM Equipos WHERE id={id_equipo}"
+    cursor.execute(query)
+    db_connection.commit()
+    return "EQUIPOK, Equipo eliminado"
+
+def modificar_equipo(payload):
+    id_equipo, nombre, descripcion, tipo, tarifa = payload.split(',')
+    query = f"UPDATE Equipos SET nombre='{nombre}', descripcion='{descripcion}', tipo='{tipo}', tarifa={tarifa} WHERE id={id_equipo}"
+    cursor.execute(query)
+    db_connection.commit()
+    return "EQUIPOK, Equipo modificado"
+
 try:
-    message = b'00010sinitUSUAR'
+    message = b'00010sinitEQUIP'
     print('sending {!r}'.format(message))
     sock.sendall(message)
     sinit = 1

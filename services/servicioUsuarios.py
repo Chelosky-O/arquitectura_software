@@ -23,67 +23,67 @@ sock.connect(bus_address)
 def handle_request(data):
     action = data[:5]
     payload = data[5:]
-    if action == "CODAA":
-        return añadir_alimento(payload)
-    elif action == "CODEA":
-        return eliminar_alimento(payload)
-    elif action == "CODMA":
-        return modificar_alimento(payload)
-    elif action == "CODIA":
-        return obtener_info_alimento(payload)
+    if action == "CODAU":
+        return añadir_usuario(payload)
+    elif action == "CODEU":
+        return eliminar_usuario(payload)
+    elif action == "CODMU":
+        return modificar_usuario(payload)
+    elif action == "CODIU":
+        return obtener_info_usuario(payload)
     elif action == "CODIT":
-        return obtener_info_todos_alimentos()
+        return obtener_info_todos_usuarios()
     else:
-        return "ALIMENK, Acción inválida"
+        return "USUARNK, Acción inválida"
 
-def añadir_alimento(payload):
-    nombre, precio, stock = payload.split(',')
-    query = f"INSERT INTO Alimentos (nombre, precio, stock) VALUES ('{nombre}', {precio}, {stock})"
+def añadir_usuario(payload):
+    nombre, rut, email = payload.split(',')
+    query = f"INSERT INTO Usuarios (rut, nombre, email) VALUES ('{rut}', '{nombre}', '{email}')"
     try:
         cursor.execute(query)
         db_connection.commit()
-        return f"ALIMEOK,{cursor.lastrowid}"
+        return "USUAROK,Usuario creado"
     except mysql.connector.Error as err:
-        return f"ALIMENK, Error: {err}"
+        return f"USUARNK, Error: {err}"
 
-def eliminar_alimento(id_alimento):
-    query = f"DELETE FROM Alimentos WHERE id={id_alimento}"
+def eliminar_usuario(rut):
+    query = f"DELETE FROM Usuarios WHERE rut='{rut}'"
     try:
         cursor.execute(query)
         db_connection.commit()
-        return "ALIMEOK, Alimento eliminado"
+        return "USUAROK,Usuario eliminado"
     except mysql.connector.Error as err:
-        return f"ALIMENK, Error: {err}"
+        return f"USUARNK, Error: {err}"
 
-def modificar_alimento(payload):
-    id_alimento, nombre, precio, stock = payload.split(',')
-    query = f"UPDATE Alimentos SET nombre='{nombre}', precio={precio}, stock={stock} WHERE id={id_alimento}"
+def modificar_usuario(payload):
+    rut, nombre, email = payload.split(',')
+    query = f"UPDATE Usuarios SET nombre='{nombre}', email='{email}' WHERE rut='{rut}'"
     try:
         cursor.execute(query)
         db_connection.commit()
-        return "ALIMEOK, Alimento modificado"
+        return "USUAROK,Usuario modificado"
     except mysql.connector.Error as err:
-        return f"ALIMENK, Error: {err}"
+        return f"USUARNK, Error: {err}"
 
-def obtener_info_alimento(id_alimento):
-    query = f"SELECT * FROM Alimentos WHERE id={id_alimento}"
+def obtener_info_usuario(rut):
+    query = f"SELECT * FROM Usuarios WHERE rut='{rut}'"
     cursor.execute(query)
     result = cursor.fetchone()
     if result:
-        response = f"ALIMEOK,{result[0]},{result[1]},{result[2]},{result[3]}"
+        response = f"USUAROK,{result[1]},{result[0]},{result[2]}"
     else:
-        response = "ALIMENK, Alimento no encontrado"
+        response = "USUARNK, Usuario no encontrado"
     return response
 
-def obtener_info_todos_alimentos():
-    query = "SELECT * FROM Alimentos"
+def obtener_info_todos_usuarios():
+    query = "SELECT * FROM Usuarios"
     cursor.execute(query)
     results = cursor.fetchall()
-    response = "ALIMEOK," + "|".join([f"{row[0]},{row[1]},{row[2]},{row[3]}" for row in results])
+    response = "USUAROK," + "|".join([f"{row[1]},{row[0]},{row[2]}" for row in results])
     return response
 
 try:
-    message = b'00010sinitALIME'
+    message = b'00010sinitUSUAR'
     print('sending {!r}'.format(message))
     sock.sendall(message)
     sinit = 1

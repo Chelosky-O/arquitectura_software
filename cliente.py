@@ -43,7 +43,7 @@ def obtener_info_equipo(id_equipo):
     # Print the formatted information
     print(f"ID: {id}")
     print(f"Nombre: {nombre}")
-    print(f"Descripcion: {descripcion}")
+    print(f"Descripción: {descripcion}")
     print(f"Tipo: {tipo}")
     print(f"Tarifa: {tarifa}")
     #print(f"Respuesta: {response}")
@@ -70,7 +70,7 @@ def obtener_info_todos_equipos():
         # Print the formatted information
         print(f"ID: {id}")
         print(f"Nombre: {nombre}")
-        print(f"Descripcion: {descripcion}")
+        print(f"Descripción: {descripcion}")
         print(f"Tipo: {tipo}")
         print(f"Tarifa: {tarifa}")
         print("-----------------")
@@ -92,14 +92,14 @@ def modificar_equipo(id_equipo, nombre, descripcion, tipo, tarifa):
     print(f"Datos del equipo de ID: {id_equipo} han sido modificados")
 
 # Funciones para la gestión de usuarios
-def crear_usuario(nombre, rut, email):
+def añadir_usuario(nombre, rut, email):
     data = f"{nombre},{rut},{email}"
-    response = send_message("USUAR", "CODCU", data)
-    print(f"Respuesta: {response}")
+    response = send_message("USUAR", "CODAU", data)
+    print(f"Usuario de RUT: {rut} ha sido añadido")
 
-def borrar_usuario(rut):
-    response = send_message("USUAR", "CODBU", str(rut))
-    print(f"Respuesta: {response}")
+def eliminar_usuario(rut):
+    response = send_message("USUAR", "CODEU", str(rut))
+    print(f"Usuario de RUT: {rut} ha sido eliminado")
 
 def modificar_usuario():
     rut = input("Ingrese el RUT del usuario a modificar: ")
@@ -107,7 +107,7 @@ def modificar_usuario():
     email = input("Ingrese el nuevo email del usuario: ")
     data = f"{rut},{nombre},{email}"
     response = send_message("USUAR", "CODMU", data)
-    print(f"Respuesta: {response}")
+    print(f"Datos del usuario de RUT: {rut} han sido modificados")
 
 def obtener_info_usuario(rut):
     response = send_message("USUAR", "CODIU", str(rut))
@@ -132,7 +132,7 @@ def obtener_info_todos_usuarios():
     
     # Iterate through each user and print the formatted information
     for usuario in usuarios:
-        print(usuario)
+        #print(usuario)
         response_parts = usuario.split(',')
 
         # Extract the required information
@@ -203,22 +203,22 @@ def obtener_info_todos_usuarios():
 #     #print(f"Respuesta: {response}")
 
 # Funciones para la gestión de alimentos
-def agregar_alimento(nombre, precio, stock):
+def añadir_alimento(nombre, precio, stock):
     data = f"{nombre},{precio},{stock}"
     response = send_message("ALIME", "CODAA", data)
-    print(f"Respuesta: {response}")
+    print(f"Alimento: {nombre} ha sido añadido")
 
-def quitar_alimento(id_alimento):
-    response = send_message("ALIME", "CODQA", str(id_alimento))
-    print(f"Respuesta: {response}")
+def eliminar_alimento(id_alimento):
+    response = send_message("ALIME", "CODEA", str(id_alimento))
+    print(f"Alimento de ID: {id_alimento} ha sido eliminado")
 
 def modificar_alimento(id_alimento, nombre, precio, stock):
     data = f"{id_alimento},{nombre},{precio},{stock}"
     response = send_message("ALIME", "CODMA", data)
-    print(f"Respuesta: {response}")
+    print(f"Los datos del alimento de ID: {id_alimento} han sido modificados")
 
 def obtener_info_alimento(id_alimento):
-    response = send_message("ALIME", "CODIU", str(id_alimento))
+    response = send_message("ALIME", "CODIA", str(id_alimento))
     response_parts = response.split(',')
     
     # Extract the required information
@@ -228,7 +228,7 @@ def obtener_info_alimento(id_alimento):
     stock = response_parts[4]
     
     # Print the formatted information
-    print(f"id: {id}")
+    print(f"ID: {id}")
     print(f"Nombre: {nombre}")
     print(f"Precio: {precio}")
     print(f"Stock: {stock}")
@@ -250,7 +250,7 @@ def obtener_info_todos_alimentos():
         stock = response_parts[3]
         
         # Print the formatted information
-        print(f"id: {id}")
+        print(f"ID: {id}")
         print(f"Nombre: {nombre}")
         print(f"Precio: {precio}")
         print(f"Stock: {stock}")
@@ -304,8 +304,8 @@ try:
         
         elif option == "2":
             print("Menú de gestión de usuarios:")
-            print("1. Crear usuario")
-            print("2. Borrar usuario")
+            print("1. Añadir usuario")
+            print("2. Eliminar usuario")
             print("3. Modificar usuario")
             print("4. Obtener información de un usuario")
             print("5. Obtener información de todos los usuarios")
@@ -315,10 +315,10 @@ try:
                 nombre = input("Ingrese nombre del usuario: ")
                 rut = input("Ingrese RUT del usuario: ")
                 email = input("Ingrese email del usuario: ")
-                crear_usuario(nombre, rut, email)
+                añadir_usuario(nombre, rut, email)
             elif usuar_option == "2":
                 rut = input("Ingrese RUT del usuario: ")
-                borrar_usuario(rut)
+                eliminar_usuario(rut)
             elif usuar_option == "3":
                 modificar_usuario()
             elif usuar_option == "4":
@@ -365,8 +365,8 @@ try:
         
         elif option == "3":
             print("Menú de gestión de alimentos:")
-            print("1. Agregar alimento")
-            print("2. Quitar alimento")
+            print("1. Añadir alimento")
+            print("2. Eliminar alimento")
             print("3. Modificar alimento")
             print("4. Obtener información de un alimento")
             print("5. Obtener información de todos los alimentos")
@@ -376,10 +376,10 @@ try:
                 nombre = input("Ingrese nombre del alimento: ")
                 precio = input("Ingrese precio del alimento: ")
                 stock = input("Ingrese stock del alimento: ")
-                agregar_alimento(nombre, precio, stock)
+                añadir_alimento(nombre, precio, stock)
             elif alime_option == "2":
                 id_alimento = input("Ingrese ID del alimento: ")
-                quitar_alimento(id_alimento)
+                eliminar_alimento(id_alimento)
             elif alime_option == "3":
                 id_alimento = input("Ingrese ID del alimento: ")
                 nombre = input("Ingrese nombre del alimento: ")
