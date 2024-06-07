@@ -38,7 +38,7 @@ def handle_request(data):
 
 def crear_usuario(payload):
     nombre, rut, email = payload.split(',')
-    query = f"INSERT INTO Cliente (rut, nombre, email) VALUES ('{rut}', '{nombre}', '{email}')"
+    query = f"INSERT INTO Clientes (rut, nombre, email) VALUES ('{rut}', '{nombre}', '{email}')"
     try:
         cursor.execute(query)
         db_connection.commit()
@@ -47,7 +47,7 @@ def crear_usuario(payload):
         return f"USUARNK,Error: {err}"
 
 def borrar_usuario(rut):
-    query = f"DELETE FROM Cliente WHERE rut='{rut}'"
+    query = f"DELETE FROM Clientes WHERE rut='{rut}'"
     try:
         cursor.execute(query)
         db_connection.commit()
@@ -57,7 +57,7 @@ def borrar_usuario(rut):
 
 def modificar_usuario(payload):
     nombre, rut, email = payload.split(',')
-    query = f"UPDATE Cliente SET nombre='{nombre}', email='{email}' WHERE rut='{rut}'"
+    query = f"UPDATE Clientes SET nombre='{nombre}', email='{email}' WHERE rut='{rut}'"
     try:
         cursor.execute(query)
         db_connection.commit()
@@ -66,7 +66,7 @@ def modificar_usuario(payload):
         return f"USUARNK,Error: {err}"
 
 def obtener_info_usuario(rut):
-    query = f"SELECT * FROM Cliente WHERE rut='{rut}'"
+    query = f"SELECT * FROM Clientes WHERE rut='{rut}'"
     cursor.execute(query)
     result = cursor.fetchone()
     if result:
@@ -76,7 +76,7 @@ def obtener_info_usuario(rut):
     return response
 
 def obtener_info_todos_usuarios():
-    query = "SELECT * FROM Cliente"
+    query = "SELECT * FROM Clientes"
     cursor.execute(query)
     results = cursor.fetchall()
     response = "USUAROK," + "|".join([f"{row[1]},{row[0]},{row[2]}" for row in results])

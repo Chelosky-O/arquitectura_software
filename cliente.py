@@ -130,7 +130,7 @@ def obtener_info_todos_usuarios():
     
     # Iterate through each user and print the formatted information
     for usuario in usuarios:
-        #print(usuario)
+        print(usuario)
         response_parts = usuario.split(',')
 
         # Extract the required information
