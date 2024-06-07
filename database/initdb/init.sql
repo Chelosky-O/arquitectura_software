@@ -2,8 +2,8 @@ CREATE DATABASE CyberCafeManager;
 
 USE CyberCafeManager;
 
--- Tabla Equipo
-CREATE TABLE Equipo (
+-- Tabla Equipos
+CREATE TABLE Equipos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre TEXT NOT NULL,
     descripcion TEXT,
@@ -11,8 +11,8 @@ CREATE TABLE Equipo (
     tarifa INT
 );
 
--- Tabla Cliente
-CREATE TABLE Cliente (
+-- Tabla Clientes
+CREATE TABLE Clientes (
     rut INT PRIMARY KEY,
     nombre TEXT NOT NULL,
     email TEXT
@@ -27,8 +27,8 @@ CREATE TABLE Arriendos (
     tiempo_arriendo INT,
     monto INT,
     estado BOOLEAN,
-    FOREIGN KEY (id_equipo) REFERENCES Equipo(id),
-    FOREIGN KEY (rut_cliente) REFERENCES Cliente(rut)
+    FOREIGN KEY (id_equipo) REFERENCES Equipos(id),
+    FOREIGN KEY (rut_cliente) REFERENCES Clientes(rut)
 );
 
 -- Tabla Alimentos
@@ -39,14 +39,14 @@ CREATE TABLE Alimentos (
     stock INT
 );
 
--- Tabla VentasAlimento
-CREATE TABLE VentasAlimento (
+-- Tabla VentasAlimentos
+CREATE TABLE VentasAlimentos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     rut_cliente INT,
     id_comida INT,
     fecha DATE,
     total INT,
-    FOREIGN KEY (rut_cliente) REFERENCES Cliente(rut),
+    FOREIGN KEY (rut_cliente) REFERENCES Clientes(rut),
     FOREIGN KEY (id_comida) REFERENCES Alimentos(id)
 );
 
@@ -56,5 +56,5 @@ CREATE TABLE Juegos (
     nombre TEXT NOT NULL,
     descripcion TEXT,
     id_equipo INT,
-    FOREIGN KEY (id_equipo) REFERENCES Equipo(id)
+    FOREIGN KEY (id_equipo) REFERENCES Equipos(id)
 );

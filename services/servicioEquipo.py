@@ -34,20 +34,20 @@ def handle_request(data):
     elif action == "CODME":
         return modificar_equipo(payload)
     else:
-        return "EQUIPNK,Invalid action"
+        return "EQUIPNK, Acción inválida"
 
 def obtener_info_equipo(id_equipo):
-    query = f"SELECT * FROM Equipo WHERE id={id_equipo}"
+    query = f"SELECT * FROM Equipos WHERE id={id_equipo}"
     cursor.execute(query)
     result = cursor.fetchone()
     if result:
         response = f"EQUIPOK,{result[0]},{result[1]},{result[2]},{result[3]},{result[4]}"
     else:
-        response = "EQUIPNK,Equipo no encontrado"
+        response = "EQUIPNK, Equipos no encontrados"
     return response
 
 def obtener_info_todos_equipos():
-    query = "SELECT * FROM Equipo"
+    query = "SELECT * FROM Equipos"
     cursor.execute(query)
     results = cursor.fetchall()
     response = "EQUIPOK," + "|".join([f"{row[0]},{row[1]},{row[2]},{row[3]},{row[4]}" for row in results])
@@ -55,23 +55,23 @@ def obtener_info_todos_equipos():
 
 def añadir_equipo(payload):
     nombre, descripcion, tipo, tarifa = payload.split(',')
-    query = f"INSERT INTO Equipo (nombre, descripcion, tipo, tarifa) VALUES ('{nombre}', '{descripcion}', '{tipo}', {tarifa})"
+    query = f"INSERT INTO Equipos (nombre, descripcion, tipo, tarifa) VALUES ('{nombre}', '{descripcion}', '{tipo}', {tarifa})"
     cursor.execute(query)
     db_connection.commit()
     return f"EQUIPOK,{cursor.lastrowid}"
 
 def eliminar_equipo(id_equipo):
-    query = f"DELETE FROM Equipo WHERE id={id_equipo}"
+    query = f"DELETE FROM Equipos WHERE id={id_equipo}"
     cursor.execute(query)
     db_connection.commit()
-    return "EQUIPOK,Equipo eliminado"
+    return "EQUIPOK, Equipo eliminado"
 
 def modificar_equipo(payload):
     id_equipo, nombre, descripcion, tipo, tarifa = payload.split(',')
-    query = f"UPDATE Equipo SET nombre='{nombre}', descripcion='{descripcion}', tipo='{tipo}', tarifa={tarifa} WHERE id={id_equipo}"
+    query = f"UPDATE Equipos SET nombre='{nombre}', descripcion='{descripcion}', tipo='{tipo}', tarifa={tarifa} WHERE id={id_equipo}"
     cursor.execute(query)
     db_connection.commit()
-    return "EQUIPOK,Equipo modificado"
+    return "EQUIPOK, Equipo modificado"
 
 try:
     message = b'00010sinitEQUIP'

@@ -50,10 +50,11 @@ def obtener_info_equipo(id_equipo):
 
 def obtener_info_todos_equipos():
     response = send_message("EQUIP", "CODIT", "")
-    response = response[10:]    
+    response = response[10:]
+   
     #Split the response string by '|'
     equipos = response.split('|')
-    
+
     # Iterate through each user and print the formatted information
     for equipo in equipos:
         #print(equipo)
@@ -79,16 +80,16 @@ def obtener_info_todos_equipos():
 def añadir_equipo(nombre, descripcion, tipo, tarifa):
     data = f"{nombre},{descripcion},{tipo},{tarifa}"
     response = send_message("EQUIP", "CODAE", data)
-    print(f"Respuesta: {response}")
+    print(f"Equipo: {nombre} ha sido añadido")
 
 def eliminar_equipo(id_equipo):
     response = send_message("EQUIP", "CODEE", str(id_equipo))
-    print(f"Respuesta: {response}")
+    print(f"Equipo de ID: {id_equipo} ha sido eliminado")
 
 def modificar_equipo(id_equipo, nombre, descripcion, tipo, tarifa):
     data = f"{id_equipo},{nombre},{descripcion},{tipo},{tarifa}"
     response = send_message("EQUIP", "CODME", data)
-    print(f"Respuesta: {response}")
+    print(f"Datos del equipo de ID: {id_equipo} han sido modificados")
 
 # Funciones para la gestión de usuarios
 def crear_usuario(nombre, rut, email):
@@ -212,34 +213,34 @@ try:
         
         if option == "1":
             print("Menú de gestión de equipos:")
-            print("1. Obtener información de un equipo")
-            print("2. Obtener información de todos los equipos")
-            print("3. Añadir equipo")
-            print("4. Eliminar equipo")
-            print("5. Modificar equipo")
+            print("1. Añadir equipo")
+            print("2. Eliminar equipo")
+            print("3. Modificar equipo")
+            print("4. Obtener información de un equipo")
+            print("5. Obtener información de todos los equipos")
             print("6. Volver al menú principal")
             equip_option = input("Seleccione una opción: ")
             if equip_option == "1":
-                id_equipo = input("Ingrese ID del equipo: ")
-                obtener_info_equipo(id_equipo)
-            elif equip_option == "2":
-                obtener_info_todos_equipos()
-            elif equip_option == "3":
                 nombre = input("Ingrese nombre del equipo: ")
-                descripcion = input("Ingrese descripcion del equipo: ")
+                descripcion = input("Ingrese descripción del equipo: ")
                 tipo = input("Ingrese tipo del equipo: ")
                 tarifa = input("Ingrese tarifa del equipo: ")
                 añadir_equipo(nombre, descripcion, tipo, tarifa)
-            elif equip_option == "4":
+            elif equip_option == "2":
                 id_equipo = input("Ingrese ID del equipo: ")
                 eliminar_equipo(id_equipo)
-            elif equip_option == "5":
+            elif equip_option == "3":
                 id_equipo = input("Ingrese ID del equipo: ")
-                nombre = input("Ingrese nombre del equipo: ")
-                descripcion = input("Ingrese descripcion del equipo: ")
-                tipo = input("Ingrese tipo del equipo: ")
-                tarifa = input("Ingrese tarifa del equipo: ")
+                nombre = input("Ingrese nuevo nombre del equipo: ")
+                descripcion = input("Ingrese nueva descripción del equipo: ")
+                tipo = input("Ingrese nuevo tipo del equipo: ")
+                tarifa = input("Ingrese nueva tarifa del equipo: ")
                 modificar_equipo(id_equipo, nombre, descripcion, tipo, tarifa)
+            elif equip_option == "4":
+                id_equipo = input("Ingrese ID del equipo: ")
+                obtener_info_equipo(id_equipo)
+            elif equip_option == "5":
+                obtener_info_todos_equipos()
             elif equip_option == "6":
                 continue
             else:
