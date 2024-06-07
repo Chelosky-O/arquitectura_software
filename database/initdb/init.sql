@@ -43,11 +43,11 @@ CREATE TABLE Alimentos (
 CREATE TABLE VentasAlimentos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     rut_usuario INT,
-    id_comida INT,
+    id_alimento INT,
     fecha DATE,
     total INT,
     FOREIGN KEY (rut_usuario) REFERENCES Usuarios(rut),
-    FOREIGN KEY (id_comida) REFERENCES Alimentos(id)
+    FOREIGN KEY (id_alimento) REFERENCES Alimentos(id)
 );
 
 -- Tabla Juegos
