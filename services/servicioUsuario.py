@@ -56,7 +56,7 @@ def borrar_usuario(rut):
         return f"USUARNK,Error: {err}"
 
 def modificar_usuario(payload):
-    nombre, rut, email = payload.split(',')
+    rut, nombre, email = payload.split(',')
     query = f"UPDATE Clientes SET nombre='{nombre}', email='{email}' WHERE rut='{rut}'"
     try:
         cursor.execute(query)

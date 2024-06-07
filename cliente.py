@@ -101,8 +101,11 @@ def borrar_usuario(rut):
     response = send_message("USUAR", "CODBU", str(rut))
     print(f"Respuesta: {response}")
 
-def modificar_usuario(nombre, rut, email):
-    data = f"{nombre},{rut},{email}"
+def modificar_usuario():
+    rut = input("Ingrese el RUT del usuario a modificar: ")
+    nombre = input("Ingrese el nuevo nombre del usuario: ")
+    email = input("Ingrese el nuevo email del usuario: ")
+    data = f"{rut},{nombre},{email}"
     response = send_message("USUAR", "CODMU", data)
     print(f"Respuesta: {response}")
 
@@ -120,7 +123,6 @@ def obtener_info_usuario(rut):
     print(f"Nombre: {nombre}")
     print(f"RUT: {rut}")
     print(f"Email: {email}")
-    #print(f"Respuesta: {response}")
 
 def obtener_info_todos_usuarios():
     response = send_message("USUAR", "CODIT", "")
@@ -143,8 +145,62 @@ def obtener_info_todos_usuarios():
         print(f"RUT: {rut}")
         print(f"Email: {email}")
         print("-----------------")
+
+
+# # Funciones para la gestión de usuarios
+# def crear_usuario(nombre, rut, email):
+#     data = f"{nombre},{rut},{email}"
+#     response = send_message("USUAR", "CODCU", data)
+#     print(f"Respuesta: {response}")
+
+# def borrar_usuario(rut):
+#     response = send_message("USUAR", "CODBU", str(rut))
+#     print(f"Respuesta: {response}")
+
+# def modificar_usuario(nombre, rut, email):
+#     data = f"{nombre},{rut},{email}"
+#     response = send_message("USUAR", "CODMU", data)
+#     print(f"Respuesta: {response}")
+
+# def obtener_info_usuario(rut):
+#     response = send_message("USUAR", "CODIU", str(rut))
     
-    #print(f"Respuesta: {response}")
+#     response_parts = response.split(',')
+    
+#     # Extract the required information
+#     nombre = response_parts[1]
+#     rut = response_parts[2]
+#     email = response_parts[3]
+    
+#     # Print the formatted information
+#     print(f"Nombre: {nombre}")
+#     print(f"RUT: {rut}")
+#     print(f"Email: {email}")
+#     #print(f"Respuesta: {response}")
+
+# def obtener_info_todos_usuarios():
+#     response = send_message("USUAR", "CODIT", "")
+#     #Split the response string by '|'
+#     response = response[10:]
+#     usuarios = response.split('|')
+    
+#     # Iterate through each user and print the formatted information
+#     for usuario in usuarios:
+#         print(usuario)
+#         response_parts = usuario.split(',')
+
+#         # Extract the required information
+#         nombre = response_parts[0]
+#         rut = response_parts[1]
+#         email = response_parts[2]
+        
+#         # Print the formatted information
+#         print(f"Nombre: {nombre}")
+#         print(f"RUT: {rut}")
+#         print(f"Email: {email}")
+#         print("-----------------")
+    
+#     #print(f"Respuesta: {response}")
 
 # Funciones para la gestión de alimentos
 def agregar_alimento(nombre, precio, stock):
@@ -264,10 +320,7 @@ try:
                 rut = input("Ingrese RUT del usuario: ")
                 borrar_usuario(rut)
             elif usuar_option == "3":
-                nombre = input("Ingrese nombre del usuario: ")
-                rut = input("Ingrese RUT del usuario: ")
-                email = input("Ingrese email del usuario: ")
-                modificar_usuario(nombre, rut, email)
+                modificar_usuario()
             elif usuar_option == "4":
                 rut = input("Ingrese RUT del usuario: ")
                 obtener_info_usuario(rut)
@@ -277,6 +330,38 @@ try:
                 continue
             else:
                 print("Opción no válida")
+
+        # elif option == "2":
+        #     print("Menú de gestión de usuarios:")
+        #     print("1. Crear usuario")
+        #     print("2. Borrar usuario")
+        #     print("3. Modificar usuario")
+        #     print("4. Obtener información de un usuario")
+        #     print("5. Obtener información de todos los usuarios")
+        #     print("6. Volver al menú principal")
+        #     usuar_option = input("Seleccione una opción: ")
+        #     if usuar_option == "1":
+        #         nombre = input("Ingrese nombre del usuario: ")
+        #         rut = input("Ingrese RUT del usuario: ")
+        #         email = input("Ingrese email del usuario: ")
+        #         crear_usuario(nombre, rut, email)
+        #     elif usuar_option == "2":
+        #         rut = input("Ingrese RUT del usuario: ")
+        #         borrar_usuario(rut)
+        #     elif usuar_option == "3":
+        #         nombre = input("Ingrese nombre del usuario: ")
+        #         rut = input("Ingrese RUT del usuario: ")
+        #         email = input("Ingrese email del usuario: ")
+        #         modificar_usuario(nombre, rut, email)
+        #     elif usuar_option == "4":
+        #         rut = input("Ingrese RUT del usuario: ")
+        #         obtener_info_usuario(rut)
+        #     elif usuar_option == "5":
+        #         obtener_info_todos_usuarios()
+        #     elif usuar_option == "6":
+        #         continue
+        #     else:
+        #         print("Opción no válida")
         
         elif option == "3":
             print("Menú de gestión de alimentos:")
