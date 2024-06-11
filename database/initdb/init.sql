@@ -27,8 +27,8 @@ CREATE TABLE Arriendos (
     tiempo_arriendo INT,
     monto INT,
     estado BOOLEAN,
-    FOREIGN KEY (id_equipo) REFERENCES Equipo(id),
-    FOREIGN KEY (rut_cliente) REFERENCES Cliente(rut)
+    FOREIGN KEY (id_equipo) REFERENCES Equipos(id),
+    FOREIGN KEY (rut_cliente) REFERENCES Usuarios(rut)
 );
 
 -- Tabla Alimentos
