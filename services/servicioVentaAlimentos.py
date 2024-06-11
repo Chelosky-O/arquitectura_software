@@ -50,7 +50,7 @@ def vender_alimento(payload):
         cursor.execute(update_query)
         
         # Registrar la venta
-        insert_query = f"INSERT INTO VentasAlimentos (id_comida, cantidad, total, fecha) VALUES ({id_alimento}, {cantidad}, {total}, NOW())"
+        insert_query = f"INSERT INTO VentasAlimentos (id_alimento, cantidad, total, fecha) VALUES ({id_alimento}, {cantidad}, {total}, NOW())"
         cursor.execute(insert_query)
         db_connection.commit()
         
