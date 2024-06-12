@@ -245,7 +245,7 @@ def obtener_info_todos_alimentos():
         response_parts = alimento.split(',')
         
         id = response_parts[0]
-        nombre = response_parts[1]
+        nombre = response_parts[1]  
         precio = response_parts[2]
         stock = response_parts[3]
         
@@ -262,106 +262,118 @@ def arrendar_equipo(rut_cliente, id_equipo, tiempo_arriendo):
     response = send_message("ARRIE", "CODAE", data)
     
     response_parts = response.split(',')
-    
-    # Extract the required information
-
-    id_arriendo = response_parts[1]
-    fecha = response_parts[2]
-    monto_total = response_parts[3]
-    
-    # Print the formatted information
-    print(f"ID Arriendo: {id_arriendo}")
-    print(f"Fecha: {fecha}")
-    print(f"Monto Total: {monto_total}")
-    #print(f"Respuesta: {response}")
+    print(response_parts[0])
+    if response_parts[0] == "ARRIEOKOK":
+        fecha = response_parts[1]
+        monto = response_parts[2]
+        print(f"Arriendo exitoso: Fecha : {fecha}, Monto : {monto}")
+    else:
+        print("Error: ", response_parts[1])
 
 
 
 # Funciones para la venta de alimentos
-def vender_alimento(nombre_alimento, cantidad):
-    data = f"{nombre_alimento},{cantidad}"
+def vender_alimento(rut_usuario, nombre_alimento, cantidad):
+    data = f"{rut_usuario},{nombre_alimento},{cantidad}"
     response = send_message("VENAL", "CODAC", data)
     
     response_parts = response.split(',')
-    
-    # Extract the required information
-    total = response_parts[1]
-    
-    # Print the formatted information
-    print(f"Total: {total}")
-    #print(f"Respuesta: {response}")
-    
+    print(response_parts[0])
+    if response_parts[0] == "VENALOKOK":
+        total = response_parts[1]
+        print(f"Total: {total}")
+    else:
+        print("Error: ", response_parts[1])
+
     
 # Funciones para el registro de ganancias
 def obtener_ganancias_arriendo(fecha_inicio, fecha_fin):
     data = f"{fecha_inicio},{fecha_fin}"
     response = send_message("REGAN", "CODAE", data)
-    
-    response_parts = response.split(',')
-    
-    if response_parts[0] == "REGANOK":
-        # Extract the required information
-        ganancias = response_parts[1:]
+    #print(response)
+    response_parts = response.split(',',1)
+    if response_parts[0] == "REGANOKOK":
+        ganancias = response_parts[1].split('|')
         for ganancia in ganancias:
-            fecha, monto = ganancia.split(',')
-            print(f"Fecha: {fecha}, Monto: {monto}")
+            #print(f"Procesando: {ganancia}")  # Agrega esta línea para depuración
+            if ',' in ganancia:
+                fecha, monto = ganancia.split(',')
+                print(f"Fecha: {fecha}, Monto: {monto}")
+            else:
+                print(f"Formato incorrecto: {ganancia}")
     else:
         print("Error: ", response_parts[1])
 
-def obtener_ganancias_venta_alimentos(fecha_inicio, fecha_fin):
+def obtener_ganancias_ventas(fecha_inicio, fecha_fin):
     data = f"{fecha_inicio},{fecha_fin}"
     response = send_message("REGAN", "CODVA", data)
     
-    response_parts = response.split(',')
-    
-    if response_parts[0] == "REGANOK":
-        # Extract the required information
-        ganancias = response_parts[1:]
+    response_parts = response.split(',',1)
+    print(response_parts)
+    if response_parts[0] == "REGANOKOK":
+        ganancias = response_parts[1].split('|')
         for ganancia in ganancias:
-            fecha, monto = ganancia.split(',')
-            print(f"Fecha: {fecha}, Monto: {monto}")
+            #print(f"Procesando: {ganancia}")  # Agrega esta línea para depuración
+            if ',' in ganancia:
+                fecha, monto = ganancia.split(',')
+                print(f"Fecha: {fecha}, Monto: {monto}")
+            else:
+                print(f"Formato incorrecto: {ganancia}")
     else:
         print("Error: ", response_parts[1])
+
     
     
 # Funciones para la generación de informes
 def generar_informe_ganancia_equipos():
     response = send_message("INFOR", "CODGG", "")
-    response_parts = response.split(',')
-    if response_parts[0] == "INFOROK":
+    response_parts = response.split(',',1)
+    print(response_parts)
+    if response_parts[0] == "INFOROKOK":
         print("Montos por tipo de equipo:")
-        montos_por_tipo = response_parts[1:-1]  # All except the first and last elements
-        for tipo_monto in montos_por_tipo:
-            tipo, monto = tipo_monto.split('|')
-            print(f"Tipo: {tipo}, Monto: {monto}")
-        monto_total = response_parts[-1]
-        print(f"Monto total: {monto_total}")
+        montos_por_tipo = response_parts[1].split('|')
+        
+        for i, tipo_monto in enumerate(montos_por_tipo):
+            subpartes = tipo_monto.split(',')
+            if i < len(montos_por_tipo) - 1:  # Todos excepto el último elemento
+                print(f"Equipo {i + 1}: {subpartes[0]},{subpartes[1]}")
+            else:  # Último elemento
+                print(f"Equipo {i + 1}: {subpartes[0]},{subpartes[1]}")
+                print(f"Monto total: {subpartes[-1]}")
     else:
         print("Error al generar el informe: ", response_parts[1])
 
 def generar_informe_uso_equipos():
     response = send_message("INFOR", "CODGU", "")
-    response_parts = response.split(',')
-    if response_parts[0] == "INFOROK":
+    response_parts = response.split(',',1)
+    if response_parts[0] == "INFOROKOK":
         print("Uso de equipos:")
-        uso_equipos = response_parts[1:]  # All except the first element
+        uso_equipos = response_parts[1]  # All except the first element
+        #print(uso_equipos)
+        uso_equipos = uso_equipos.split('|')
+        #print(uso_equipos)
         for equipo in uso_equipos:
-            id_equipo, nombre, tiempo = equipo.split('|')
+            id_equipo, nombre, tiempo = equipo.split(',')
             print(f"ID Equipo: {id_equipo}, Nombre: {nombre}, Tiempo: {tiempo}")
     else:
         print("Error al generar el informe: ", response_parts[1])
 
 def generar_informe_ventas():
     response = send_message("INFOR", "CODGV", "")
-    response_parts = response.split(',')
-    if response_parts[0] == "INFOROK":
+    response_parts = response.split(',',1)
+    if response_parts[0] == "INFOROKOK":
         print("Ventas de alimentos:")
-        ventas_alimentos = response_parts[1:-1]  # All except the first and last elements
-        for alimento in ventas_alimentos:
-            id_alimento, nombre, monto = alimento.split('|')
-            print(f"ID Alimento: {id_alimento}, Nombre: {nombre}, Monto: {monto}")
-        monto_total = response_parts[-1]
-        print(f"Monto total: {monto_total}")
+        ventas_alimentos = response_parts[1].split('|')  # All except the first and last elements
+
+        for i, alimento in enumerate(ventas_alimentos):
+            subpartes = alimento.split(',')
+            print(subpartes)
+            if i < len(ventas_alimentos) - 1:  # Todos excepto el último elemento
+                print(f"Alimento {i + 1}: ID {subpartes[0]},Nombre {subpartes[1]},Monto {subpartes[2]} ")
+            else:  # Último elemento
+                print(f"Alimento {i + 1}: ID {subpartes[0]},Nombre {subpartes[1]},Monto {subpartes[2]} ")
+                print(f"Monto total: {subpartes[-1]}")
+        
     else:
         print("Error al generar el informe: ", response_parts[1])
 
@@ -529,13 +541,15 @@ try:
             print("2. Volver al menú principal")
             venal_option = input("Seleccione una opción: ")
             if venal_option == "1":
+                rut_usuario = input("Ingrese RUT del usuario: ")
                 nombre_alimento = input("Ingrese nombre del alimento: ")
                 cantidad = input("Ingrese cantidad del alimento: ")
-                vender_alimento(nombre_alimento, cantidad)
+                vender_alimento(rut_usuario, nombre_alimento, cantidad)
             elif venal_option == "2":
                 continue
             else:
                 print("Opción no válida")
+
                 
         elif option == "6":
             print("Menú de registro de ganancias:")
@@ -550,7 +564,7 @@ try:
             elif regan_option == "2":
                 fecha_inicio = input("Ingrese la fecha de inicio (YYYY-MM-DD): ")
                 fecha_fin = input("Ingrese la fecha de fin (YYYY-MM-DD): ")
-                obtener_ganancias_venta_alimentos(fecha_inicio, fecha_fin)
+                obtener_ganancias_ventas(fecha_inicio, fecha_fin)
             elif regan_option == "3":
                 continue
             else:

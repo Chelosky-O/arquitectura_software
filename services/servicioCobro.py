@@ -22,25 +22,29 @@ sock.connect(bus_address)
 
 def handle_request(data):
     action = data[:5]
-    payload = data[5:]
     if action == "CODCP":
-        return cobrar_por_equipo(payload)
+        return cobrar_por_equipo(data[5:])
     else:
         return "COBRONK, Acción inválida"
 
 def cobrar_por_equipo(payload):
-    id_equipo, tiempo_arriendo = payload.split(',')
-    
-    # Obtener tarifa del equipo
-    query = f"SELECT tarifa FROM Equipos WHERE id={id_equipo}"
-    cursor.execute(query)
-    result = cursor.fetchone()
-    if result:
-        tarifa = result[0]
-        monto_total = int(tiempo_arriendo) * tarifa
-        return f"COBROOK,{monto_total}"
-    else:
-        return "COBRONK, Equipo no encontrado"
+    print(payload)
+    try:
+        id_equipo, tiempo_arriendo = payload.split(',')
+        tiempo_arriendo = int(tiempo_arriendo)
+        
+        # Obtener la tarifa del equipo
+        query = f"SELECT tarifa FROM Equipos WHERE id={id_equipo}"
+        cursor.execute(query)
+        result = cursor.fetchone()
+        if result:
+            tarifa = result[0]
+            monto = tarifa * tiempo_arriendo
+            return f"COBROK,{monto}"
+        else:
+            return "COBRONK, Equipo no encontrado"
+    except Exception as e:
+        return f"COBRONK,Error: {str(e)}"
 
 try:
     message = b'00010sinitCOBRO'

@@ -22,41 +22,44 @@ sock.connect(bus_address)
 
 def handle_request(data):
     action = data[:5]
-    payload = data[5:]
     if action == "CODAC":
-        return vender_alimento(payload)
+        return vender_alimento(data[5:])
     else:
         return "VENALNK, Acción inválida"
 
 def vender_alimento(payload):
-    nombre_alimento, cantidad = payload.split(',')
-    cantidad = int(cantidad)
-    
-    # Obtener información del alimento
-    query = f"SELECT id, precio, stock FROM Alimentos WHERE nombre='{nombre_alimento}'"
-    cursor.execute(query)
-    result = cursor.fetchone()
-    if result:
-        id_alimento, precio, stock = result
-        if stock < cantidad:
-            return "VENALNK, Stock insuficiente"
+    try:
+        rut_usuario, nombre_alimento, cantidad = payload.split(',')
+        cantidad = int(cantidad)
         
-        # Calcular total de la venta
-        total = precio * cantidad
-        
-        # Actualizar el inventario
-        nuevo_stock = stock - cantidad
-        update_query = f"UPDATE Alimentos SET stock={nuevo_stock} WHERE id={id_alimento}"
-        cursor.execute(update_query)
-        
-        # Registrar la venta
-        insert_query = f"INSERT INTO VentasAlimentos (id_alimento, cantidad, total, fecha) VALUES ({id_alimento}, {cantidad}, {total}, NOW())"
-        cursor.execute(insert_query)
-        db_connection.commit()
-        
-        return f"VENALOK,{total}"
-    else:
-        return "VENALNK, Alimento no encontrado"
+        # Obtener información del alimento
+        query = f"SELECT id, precio, stock FROM Alimentos WHERE nombre='{nombre_alimento}'"
+        cursor.execute(query)
+        result = cursor.fetchone()
+        print(result)
+        if result:
+            id_alimento, precio, stock = result
+            if stock < cantidad:
+                return "VENALNK,Stock insuficiente"
+            
+            # Calcular total de la venta
+            total = precio * cantidad
+            
+            # Actualizar el inventario
+            nuevo_stock = stock - cantidad
+            update_query = f"UPDATE Alimentos SET stock={nuevo_stock} WHERE id={id_alimento}"
+            cursor.execute(update_query)
+            
+            # Registrar la venta
+            insert_query = f"INSERT INTO VentasAlimentos (rut_usuario, id_alimento, fecha, total) VALUES ({rut_usuario}, {id_alimento}, NOW(), {total})"
+            cursor.execute(insert_query)
+            db_connection.commit()
+            
+            return f"VENALOK,{total}"
+        else:
+            return "VENALNK,Alimento no encontrado"
+    except Exception as e:
+        return f"VENALNK,Error: {str(e)}"
 
 try:
     message = b'00010sinitVENAL'

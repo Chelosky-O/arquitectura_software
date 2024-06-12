@@ -22,29 +22,42 @@ sock.connect(bus_address)
 
 def handle_request(data):
     action = data[:5]
-    payload = data[5:]
     if action == "CODAE":
-        return obtener_ganancias_arriendo(payload)
+        return obtener_ganancias_arriendo(data[5:])
     elif action == "CODVA":
-        return obtener_ganancias_venta_alimentos(payload)
+        return obtener_ganancias_ventas(data[5:])
     else:
         return "REGANNK, Acción inválida"
 
 def obtener_ganancias_arriendo(payload):
-    fecha_inicio, fecha_fin = payload.split(',')
-    query = f"SELECT fecha, SUM(monto) FROM Arriendos WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}' GROUP BY fecha"
-    cursor.execute(query)
-    results = cursor.fetchall()
-    response = "REGANOK," + "|".join([f"{row[0]},{row[1]}" for row in results])
-    return response
+    try:
+        fecha_inicio, fecha_fin = payload.split(',')
+        query = f"SELECT fecha, monto FROM Arriendos WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
+        cursor.execute(query)
+        results = cursor.fetchall()
+        
+        if results:
+            ganancias = "|".join([f"{row[0]},{row[1]}" for row in results])
+            return f"REGANOK,{ganancias}"
+        else:
+            return "REGANNK, No hay ganancias en el intervalo proporcionado"
+    except Exception as e:
+        return f"REGANNK,Error: {str(e)}"
 
-def obtener_ganancias_venta_alimentos(payload):
-    fecha_inicio, fecha_fin = payload.split(',')
-    query = f"SELECT fecha, SUM(total) FROM VentasAlimentos WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}' GROUP BY fecha"
-    cursor.execute(query)
-    results = cursor.fetchall()
-    response = "REGANOK," + "|".join([f"{row[0]},{row[1]}" for row in results])
-    return response
+def obtener_ganancias_ventas(payload):
+    try:
+        fecha_inicio, fecha_fin = payload.split(',')
+        query = f"SELECT fecha, total FROM VentasAlimentos WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
+        cursor.execute(query)
+        results = cursor.fetchall()
+        
+        if results:
+            ganancias = "|".join([f"{row[0]},{row[1]}" for row in results])
+            return f"REGANOK,{ganancias}"
+        else:
+            return "REGANNK, No hay ganancias en el intervalo proporcionado"
+    except Exception as e:
+        return f"REGANNK,Error: {str(e)}"
 
 try:
     message = b'00010sinitREGAN'

@@ -1,7 +1,6 @@
 import socket
 import sys
 import mysql.connector
-from datetime import datetime
 
 # Conectar a la base de datos
 db_connection = mysql.connector.connect(
@@ -23,56 +22,67 @@ sock.connect(bus_address)
 
 def handle_request(data):
     action = data[:5]
-    payload = data[5:]
     if action == "CODAE":
-        return arrendar_equipo(payload)
+        return arrendar_equipo(data[5:])
     else:
         return "ARRIENK, Acción inválida"
 
 def arrendar_equipo(payload):
-    rut_cliente, id_equipo, tiempo_arriendo = payload.split(',')
-    fecha = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-    # Usar servicio COBRO para calcular el monto total
-    monto_total = calcular_monto(id_equipo, tiempo_arriendo)
-    if monto_total is None:
-        return "ARRIENK, Error en cálculo de cobro"
-
-    # Insertar arriendo
-    query = f"INSERT INTO Arriendos (id_equipo, rut_usuario, fecha, tiempo_arriendo, monto, estado) VALUES ({id_equipo}, {rut_cliente}, '{fecha}', {tiempo_arriendo}, {monto_total}, 1)"
     try:
+        rut_cliente, id_equipo, tiempo_arriendo = payload.split(',')
+        tiempo_arriendo = int(tiempo_arriendo)
+        
+        # Calcular el monto usando el servicio de cobro
+        monto = calcular_cobro(id_equipo, tiempo_arriendo)
+        if monto is None:
+            return "ARRIENK, Error en cálculo de cobro"
+        
+        # Registrar el arriendo en la base de datos
+        query = f"INSERT INTO Arriendos (id_equipo, rut_usuario, fecha, tiempo_arriendo, monto, estado) VALUES ({id_equipo}, {rut_cliente}, NOW(), {tiempo_arriendo}, {monto}, TRUE)"
         cursor.execute(query)
         db_connection.commit()
-        id_arriendo = cursor.lastrowid
-        return f"ARRIEOK,{id_arriendo},{fecha},{monto_total}"
-    except mysql.connector.Error as err:
-        return f"ARRIENK, Error: {err}"
+        
+        # Obtener la fecha de arriendo registrada
+        cursor.execute("SELECT fecha FROM Arriendos ORDER BY id DESC LIMIT 1")
+        fecha = cursor.fetchone()[0]
+        
+        return f"ARRIEOK,{fecha},{monto}"
+    except Exception as e:
+        return f"ARRIENK,Error: {str(e)}"
 
-def calcular_monto(id_equipo, tiempo_arriendo):
-    # Conectar al servicio COBRO para calcular el monto total
+def calcular_cobro(id_equipo, tiempo_arriendo):
     try:
-        cobro_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        cobro_bus_address = ('localhost', 5001)  # Puerto donde el servicio COBRO está escuchando
-        cobro_sock.connect(cobro_bus_address)
-        data = f"{id_equipo},{tiempo_arriendo}"
-        message = f"{len(data):05}CODCP{data}".encode()
-        cobro_sock.sendall(message)
-        amount_expected = int(cobro_sock.recv(5))
-        amount_received = 0
-        response = b''
-        while amount_received < amount_expected:
-            chunk = cobro_sock.recv(amount_expected - amount_received)
-            amount_received += len(chunk)
-            response += chunk
-        cobro_sock.close()
-        response = response.decode()
-        if response.startswith("COBROOK"):
-            return int(response.split(',')[1])
+        message = f"{id_equipo},{tiempo_arriendo}"
+        response = send_message("COBRO", "CODCP", message)
+        
+        response_parts = response.split(',')
+        print(response)
+        if response_parts[0] == "COBROOKK":
+            return int(response_parts[1])
         else:
             return None
     except Exception as e:
-        print(f"Error connecting to COBRO service: {e}")
+        print(f"Error connecting to COBRO service: {str(e)}")
         return None
+
+def send_message(service, action, data):
+    message_data = f"{action}{data}"
+    message = f"{len(message_data):05}{service}{message_data}".encode()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    bus_address = ('localhost', 5000)
+    sock.connect(bus_address)
+    try:
+        sock.sendall(message)
+        amount_expected = int(sock.recv(5))
+        amount_received = 0
+        response = b''
+        while amount_received < amount_expected:
+            chunk = sock.recv(amount_expected - amount_received)
+            amount_received += len(chunk)
+            response += chunk
+    finally:
+        sock.close()
+    return response.decode()
 
 try:
     message = b'00010sinitARRIE'

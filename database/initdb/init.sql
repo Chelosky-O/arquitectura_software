@@ -22,13 +22,13 @@ CREATE TABLE Usuarios (
 CREATE TABLE Arriendos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_equipo INT,
-    rut_cliente INT,
+    rut_usuario INT,
     fecha DATETIME, -- Cambiar el tipo de datos a DATETIME
     tiempo_arriendo INT,
     monto INT,
     estado BOOLEAN,
     FOREIGN KEY (id_equipo) REFERENCES Equipos(id),
-    FOREIGN KEY (rut_cliente) REFERENCES Usuarios(rut)
+    FOREIGN KEY (rut_usuario) REFERENCES Usuarios(rut)
 );
 
 -- Tabla Alimentos
