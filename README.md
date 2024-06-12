@@ -4,4 +4,4 @@
 
 
 > [!IMPORTANTE]
->Para iniciar los servicios se pueden iniciar todos con `python services/startServices.py`
+> Para iniciar los servicios se pueden iniciar todos con `python services/startServices.py`
