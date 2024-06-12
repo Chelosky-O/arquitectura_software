@@ -34,75 +34,51 @@ def handle_request(data):
         return eliminar_equipo(payload)
     elif action == "CODME":
         return modificar_equipo(payload)
-    elif action == "DISPO":
-        if payload == "disponibles":
-            return obtener_dispositivos_disponibles()
-        elif payload == "no_disponibles":
-            return obtener_dispositivos_no_disponibles()
-        else:
-            return "EQUIPNK, Acción inválida"
     else:
         return "EQUIPNK, Acción inválida"
 
 def obtener_info_equipo(id_equipo):
-    query = f"SELECT * FROM Equipos WHERE id={id_equipo}"
+    query = f"""
+    SELECT e.id, e.nombre, e.descripcion, e.tipo, e.tarifa, a.fecha_fin 
+    FROM Equipos e
+    LEFT JOIN Arriendos a ON e.id = a.id_equipo
+    WHERE e.id = {id_equipo}
+    """
     cursor.execute(query)
     result = cursor.fetchone()
     if result:
-        response = f"EQUIPOK,{result[0]},{result[1]},{result[2]},{result[3]},{result[4]}"
+        id_equipo, nombre, descripcion, tipo, tarifa, fecha_fin = result
+        now = datetime.now().replace(microsecond=0)
+        if fecha_fin is None or fecha_fin.replace(microsecond=0) < now:
+            response = f"EQUIPOK,{id_equipo},{nombre},{descripcion},{tipo},{tarifa},No arrendado"
+        else:
+            response = f"EQUIPOK,{id_equipo},{nombre},{descripcion},{tipo},{tarifa},{fecha_fin}"
     else:
-        response = "EQUIPNK, Equipos no encontrados"
+        response = "EQUIPNK, Equipo no encontrado"
     return response
 
 def obtener_info_todos_equipos():
-    query = "SELECT * FROM Equipos"
-    cursor.execute(query)
-    results = cursor.fetchall()
-    response = "EQUIPOK," + "|".join([f"{row[0]},{row[1]},{row[2]},{row[3]},{row[4]}" for row in results])
-    return response
-
-def obtener_dispositivos_disponibles():
     # Recuperar todos los registros de equipos y arriendos
     query = """
-    SELECT e.id, e.nombre, a.fecha_fin FROM Equipos e
+    SELECT e.id, e.nombre, e.descripcion, e.tipo, e.tarifa, a.fecha_fin 
+    FROM Equipos e
     LEFT JOIN Arriendos a ON e.id = a.id_equipo
     """
     cursor.execute(query)
     results = cursor.fetchall()
 
-    # Filtrar dispositivos disponibles en Python
+    # Separar dispositivos disponibles y arrendados en Python
     dispositivos_disponibles = []
+    dispositivos_arrendados = []
+    now = datetime.now().replace(microsecond=0)
     for row in results:
-        id_equipo, nombre_equipo, fecha_fin = row
-        if fecha_fin is None or fecha_fin < datetime.now():
-            dispositivos_disponibles.append(f"{id_equipo} - {nombre_equipo}")
+        id_equipo, nombre, descripcion, tipo, tarifa, fecha_fin = row
+        if fecha_fin is None or fecha_fin.replace(microsecond=0) < now:
+            dispositivos_disponibles.append(f"{id_equipo},{nombre},{descripcion},{tipo},{tarifa}")
+        else:
+            dispositivos_arrendados.append(f"{id_equipo},{nombre},{descripcion},{tipo},{tarifa}")
     
-    if dispositivos_disponibles:
-        response = "EQUIPOK," + ",".join(dispositivos_disponibles)
-    else:
-        response = "EQUIPOK,No hay dispositivos disponibles"
-    return response
-
-def obtener_dispositivos_no_disponibles():
-    # Recuperar todos los registros de equipos y arriendos
-    query = """
-    SELECT e.id, e.nombre, a.fecha_fin FROM Equipos e
-    LEFT JOIN Arriendos a ON e.id = a.id_equipo
-    """
-    cursor.execute(query)
-    results = cursor.fetchall()
-
-    # Filtrar dispositivos no disponibles en Python
-    dispositivos_no_disponibles = []
-    for row in results:
-        id_equipo, nombre_equipo, fecha_fin = row
-        if fecha_fin is not None and fecha_fin > datetime.now():
-            dispositivos_no_disponibles.append(f"{id_equipo} - {nombre_equipo}")
-    
-    if dispositivos_no_disponibles:
-        response = "EQUIPOK," + ",".join(dispositivos_no_disponibles)
-    else:
-        response = "EQUIPOK,No hay dispositivos no disponibles"
+    response = "EQUIPOK,Disponibles:" + "|".join(dispositivos_disponibles) + ";Arrendados:" + "|".join(dispositivos_arrendados)
     return response
 
 def añadir_equipo(payload):

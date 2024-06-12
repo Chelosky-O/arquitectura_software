@@ -30,52 +30,71 @@ def send_message(service, action, data):
 # Funciones para la gestión de equipos
 def obtener_info_equipo(id_equipo):
     response = send_message("EQUIP", "CODIU", str(id_equipo))
-    
     response_parts = response.split(',')
     
-    # Extract the required information
     id = response_parts[1]
     nombre = response_parts[2]
     descripcion = response_parts[3]
     tipo = response_parts[4]
     tarifa = response_parts[5]
-    
-    # Print the formatted information
-    print(f"ID: {id}")
-    print(f"Nombre: {nombre}")
-    print(f"Descripción: {descripcion}")
-    print(f"Tipo: {tipo}")
-    print(f"Tarifa: {tarifa}")
-    #print(f"Respuesta: {response}")
+    arrendado = response_parts[6]
 
-def obtener_info_todos_equipos():
-    response = send_message("EQUIP", "CODIT", "")
-    response = response[10:]
-   
-    #Split the response string by '|'
-    equipos = response.split('|')
-
-    # Iterate through each user and print the formatted information
-    for equipo in equipos:
-        #print(equipo)
-        response_parts = equipo.split(',')
-        
-        # Extract the required information
-        id = response_parts[0]
-        nombre = response_parts[1]
-        descripcion = response_parts[2]
-        tipo = response_parts[3]
-        tarifa = response_parts[4]
-
-        # Print the formatted information
+    if arrendado == "No arrendado":
         print(f"ID: {id}")
         print(f"Nombre: {nombre}")
         print(f"Descripción: {descripcion}")
         print(f"Tipo: {tipo}")
         print(f"Tarifa: {tarifa}")
-        print("-----------------")
+    else:
+        print(f"ID: {id}")
+        print(f"Nombre: {nombre}")
+        print(f"Descripción: {descripcion}")
+        print(f"Tipo: {tipo}")
+        print(f"Tarifa: {tarifa}")
+        print(f"Arrendado: {arrendado}")
 
-    #print(f"Respuesta: {response}")
+def obtener_info_todos_equipos():
+    response = send_message("EQUIP", "CODIT", "")
+    response = response[10:]
+    
+    # Separar respuesta en disponibles y arrendados
+    partes = response.split(';')
+    disponibles = partes[0].replace("Disponibles:", "").split('|')
+    arrendados = partes[1].replace("Arrendados:", "").split('|')
+
+    # Mostrar dispositivos disponibles
+    print("Dispositivos Disponibles:")
+    for equipo in disponibles:
+        if equipo:
+            response_parts = equipo.split(',')
+            id = response_parts[0]
+            nombre = response_parts[1]
+            descripcion = response_parts[2]
+            tipo = response_parts[3]
+            tarifa = response_parts[4]
+            print(f"ID: {id}")
+            print(f"Nombre: {nombre}")
+            print(f"Descripción: {descripcion}")
+            print(f"Tipo: {tipo}")
+            print(f"Tarifa: {tarifa}")
+            print("-----------------")
+
+    # Mostrar dispositivos arrendados
+    print("Dispositivos Arrendados:")
+    for equipo in arrendados:
+        if equipo:
+            response_parts = equipo.split(',')
+            id = response_parts[0]
+            nombre = response_parts[1]
+            descripcion = response_parts[2]
+            tipo = response_parts[3]
+            tarifa = response_parts[4]
+            print(f"ID: {id}")
+            print(f"Nombre: {nombre}")
+            print(f"Descripción: {descripcion}")
+            print(f"Tipo: {tipo}")
+            print(f"Tarifa: {tarifa}")
+            print("-----------------")
 
 def añadir_equipo(nombre, descripcion, tipo, tarifa):
     data = f"{nombre},{descripcion},{tipo},{tarifa}"
@@ -356,8 +375,7 @@ try:
             print("3. Modificar equipo")
             print("4. Obtener información de un equipo")
             print("5. Obtener información de todos los equipos")
-            print("6. Ver dispositivos por disponibilidad")
-            print("7. Volver al menú principal")
+            print("6. Volver al menú principal")
             equip_option = input("Seleccione una opción: ")
             if equip_option == "1":
                 nombre = input("Ingrese nombre del equipo: ")
@@ -381,16 +399,6 @@ try:
             elif equip_option == "5":
                 obtener_info_todos_equipos()
             elif equip_option == "6":
-                print("1. Dispositivos disponibles")
-                print("2. Dispositivos no disponibles")
-                dispo_option = input("Seleccione una opción: ")
-                if dispo_option == "1":
-                    obtener_dispositivos_disponibles()
-                elif dispo_option == "2":
-                    obtener_dispositivos_no_disponibles()
-                else:
-                    print("Opción no válida")
-            elif equip_option == "7":
                 continue
             else:
                 print("Opción no válida")
