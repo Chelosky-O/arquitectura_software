@@ -1,6 +1,7 @@
 import socket
 import sys
 import mysql.connector
+from datetime import datetime, timedelta
 
 # Conectar a la base de datos
 db_connection = mysql.connector.connect(
@@ -32,23 +33,47 @@ def arrendar_equipo(payload):
         rut_cliente, id_equipo, tiempo_arriendo = payload.split(',')
         tiempo_arriendo = int(tiempo_arriendo)
         
+        # Verificar si el dispositivo ya está arrendado
+        cursor.execute("SELECT fecha_fin FROM Arriendos WHERE id_equipo = %s ORDER BY fecha_fin DESC LIMIT 1", (id_equipo,))
+        resultado = cursor.fetchone()
+        if resultado:
+            fecha_fin_ultima = resultado[0]
+            if fecha_fin_ultima > datetime.now():
+                return "ARRIENK,Error: Este dispositivo está arrendado!"
+        
         # Calcular el monto usando el servicio de cobro
         monto = calcular_cobro(id_equipo, tiempo_arriendo)
         if monto is None:
             return "ARRIENK, Error en cálculo de cobro"
         
+        # Calcular fecha_inicio y fecha_fin
+        fecha_inicio = datetime.now()
+        fecha_fin = fecha_inicio + timedelta(hours=tiempo_arriendo)
+        
+        # Formatear fechas para la consulta SQL
+        fecha_inicio_str = fecha_inicio.strftime('%Y-%m-%d %H:%M:%S')
+        fecha_fin_str = fecha_fin.strftime('%Y-%m-%d %H:%M:%S')
+        
         # Registrar el arriendo en la base de datos
-        query = f"INSERT INTO Arriendos (id_equipo, rut_usuario, fecha, tiempo_arriendo, monto, estado) VALUES ({id_equipo}, {rut_cliente}, NOW(), {tiempo_arriendo}, {monto}, TRUE)"
+        query = (
+            f"INSERT INTO Arriendos (id_equipo, rut_usuario, fecha, tiempo_arriendo, monto, fecha_fin) "
+            f"VALUES ({id_equipo}, {rut_cliente}, '{fecha_inicio_str}', {tiempo_arriendo}, {monto}, '{fecha_fin_str}')"
+        )
+        print(query)  # Agrega esta línea para depuración
         cursor.execute(query)
         db_connection.commit()
         
-        # Obtener la fecha de arriendo registrada
-        cursor.execute("SELECT fecha FROM Arriendos ORDER BY id DESC LIMIT 1")
-        fecha = cursor.fetchone()[0]
+        # Obtener la fecha de arriendo y fecha_fin registradas
+        cursor.execute("SELECT fecha, fecha_fin FROM Arriendos ORDER BY id DESC LIMIT 1")
+        resultado = cursor.fetchone()
+        fecha = resultado[0]
+        fecha_fin = resultado[1]
         
-        return f"ARRIEOK,{fecha},{monto}"
+        return f"ARRIEOK,{fecha},{monto},{fecha_fin}"
     except Exception as e:
         return f"ARRIENK,Error: {str(e)}"
+
+
 
 def calcular_cobro(id_equipo, tiempo_arriendo):
     try:

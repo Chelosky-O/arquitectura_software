@@ -1,6 +1,7 @@
 import socket
 import sys
 import mysql.connector
+from datetime import datetime
 
 # Conectar a la base de datos
 db_connection = mysql.connector.connect(
@@ -33,6 +34,13 @@ def handle_request(data):
         return eliminar_equipo(payload)
     elif action == "CODME":
         return modificar_equipo(payload)
+    elif action == "DISPO":
+        if payload == "disponibles":
+            return obtener_dispositivos_disponibles()
+        elif payload == "no_disponibles":
+            return obtener_dispositivos_no_disponibles()
+        else:
+            return "EQUIPNK, Acción inválida"
     else:
         return "EQUIPNK, Acción inválida"
 
@@ -51,6 +59,50 @@ def obtener_info_todos_equipos():
     cursor.execute(query)
     results = cursor.fetchall()
     response = "EQUIPOK," + "|".join([f"{row[0]},{row[1]},{row[2]},{row[3]},{row[4]}" for row in results])
+    return response
+
+def obtener_dispositivos_disponibles():
+    # Recuperar todos los registros de equipos y arriendos
+    query = """
+    SELECT e.id, e.nombre, a.fecha_fin FROM Equipos e
+    LEFT JOIN Arriendos a ON e.id = a.id_equipo
+    """
+    cursor.execute(query)
+    results = cursor.fetchall()
+
+    # Filtrar dispositivos disponibles en Python
+    dispositivos_disponibles = []
+    for row in results:
+        id_equipo, nombre_equipo, fecha_fin = row
+        if fecha_fin is None or fecha_fin < datetime.now():
+            dispositivos_disponibles.append(f"{id_equipo} - {nombre_equipo}")
+    
+    if dispositivos_disponibles:
+        response = "EQUIPOK," + ",".join(dispositivos_disponibles)
+    else:
+        response = "EQUIPOK,No hay dispositivos disponibles"
+    return response
+
+def obtener_dispositivos_no_disponibles():
+    # Recuperar todos los registros de equipos y arriendos
+    query = """
+    SELECT e.id, e.nombre, a.fecha_fin FROM Equipos e
+    LEFT JOIN Arriendos a ON e.id = a.id_equipo
+    """
+    cursor.execute(query)
+    results = cursor.fetchall()
+
+    # Filtrar dispositivos no disponibles en Python
+    dispositivos_no_disponibles = []
+    for row in results:
+        id_equipo, nombre_equipo, fecha_fin = row
+        if fecha_fin is not None and fecha_fin > datetime.now():
+            dispositivos_no_disponibles.append(f"{id_equipo} - {nombre_equipo}")
+    
+    if dispositivos_no_disponibles:
+        response = "EQUIPOK," + ",".join(dispositivos_no_disponibles)
+    else:
+        response = "EQUIPOK,No hay dispositivos no disponibles"
     return response
 
 def añadir_equipo(payload):

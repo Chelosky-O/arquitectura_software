@@ -26,7 +26,7 @@ CREATE TABLE Arriendos (
     fecha DATETIME, -- Cambiar el tipo de datos a DATETIME
     tiempo_arriendo INT,
     monto INT,
-    estado BOOLEAN,
+    fecha_fin DATETIME,
     FOREIGN KEY (id_equipo) REFERENCES Equipos(id),
     FOREIGN KEY (rut_usuario) REFERENCES Usuarios(rut)
 );

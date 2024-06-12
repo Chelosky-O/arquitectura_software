@@ -90,6 +90,18 @@ def modificar_equipo(id_equipo, nombre, descripcion, tipo, tarifa):
     data = f"{id_equipo},{nombre},{descripcion},{tipo},{tarifa}"
     response = send_message("EQUIP", "CODME", data)
     print(f"Datos del equipo de ID: {id_equipo} han sido modificados")
+    
+def obtener_dispositivos_disponibles():
+    response = send_message("EQUIP", "DISPO", "disponibles")
+    dispositivos = response.split(',')
+    for dispositivo in dispositivos:
+        print(dispositivo)
+
+def obtener_dispositivos_no_disponibles():
+    response = send_message("EQUIP", "DISPO", "no_disponibles")
+    dispositivos = response.split(',')
+    for dispositivo in dispositivos:
+        print(dispositivo)    
 
 # Funciones para la gestión de usuarios
 def añadir_usuario(nombre, rut, email):
@@ -146,61 +158,6 @@ def obtener_info_todos_usuarios():
         print(f"Email: {email}")
         print("-----------------")
 
-
-# # Funciones para la gestión de usuarios
-# def crear_usuario(nombre, rut, email):
-#     data = f"{nombre},{rut},{email}"
-#     response = send_message("USUAR", "CODCU", data)
-#     print(f"Respuesta: {response}")
-
-# def borrar_usuario(rut):
-#     response = send_message("USUAR", "CODBU", str(rut))
-#     print(f"Respuesta: {response}")
-
-# def modificar_usuario(nombre, rut, email):
-#     data = f"{nombre},{rut},{email}"
-#     response = send_message("USUAR", "CODMU", data)
-#     print(f"Respuesta: {response}")
-
-# def obtener_info_usuario(rut):
-#     response = send_message("USUAR", "CODIU", str(rut))
-    
-#     response_parts = response.split(',')
-    
-#     # Extract the required information
-#     nombre = response_parts[1]
-#     rut = response_parts[2]
-#     email = response_parts[3]
-    
-#     # Print the formatted information
-#     print(f"Nombre: {nombre}")
-#     print(f"RUT: {rut}")
-#     print(f"Email: {email}")
-#     #print(f"Respuesta: {response}")
-
-# def obtener_info_todos_usuarios():
-#     response = send_message("USUAR", "CODIT", "")
-#     #Split the response string by '|'
-#     response = response[10:]
-#     usuarios = response.split('|')
-    
-#     # Iterate through each user and print the formatted information
-#     for usuario in usuarios:
-#         print(usuario)
-#         response_parts = usuario.split(',')
-
-#         # Extract the required information
-#         nombre = response_parts[0]
-#         rut = response_parts[1]
-#         email = response_parts[2]
-        
-#         # Print the formatted information
-#         print(f"Nombre: {nombre}")
-#         print(f"RUT: {rut}")
-#         print(f"Email: {email}")
-#         print("-----------------")
-    
-#     #print(f"Respuesta: {response}")
 
 # Funciones para la gestión de alimentos
 def añadir_alimento(nombre, precio, stock):
@@ -266,7 +223,8 @@ def arrendar_equipo(rut_cliente, id_equipo, tiempo_arriendo):
     if response_parts[0] == "ARRIEOKOK":
         fecha = response_parts[1]
         monto = response_parts[2]
-        print(f"Arriendo exitoso: Fecha : {fecha}, Monto : {monto}")
+        fecha_fin = response_parts[3]
+        print(f"Arriendo exitoso: Fecha inicio: {fecha},Fecha final: {fecha_fin}, Monto : {monto}")
     else:
         print("Error: ", response_parts[1])
 
@@ -398,7 +356,8 @@ try:
             print("3. Modificar equipo")
             print("4. Obtener información de un equipo")
             print("5. Obtener información de todos los equipos")
-            print("6. Volver al menú principal")
+            print("6. Ver dispositivos por disponibilidad")
+            print("7. Volver al menú principal")
             equip_option = input("Seleccione una opción: ")
             if equip_option == "1":
                 nombre = input("Ingrese nombre del equipo: ")
@@ -422,6 +381,16 @@ try:
             elif equip_option == "5":
                 obtener_info_todos_equipos()
             elif equip_option == "6":
+                print("1. Dispositivos disponibles")
+                print("2. Dispositivos no disponibles")
+                dispo_option = input("Seleccione una opción: ")
+                if dispo_option == "1":
+                    obtener_dispositivos_disponibles()
+                elif dispo_option == "2":
+                    obtener_dispositivos_no_disponibles()
+                else:
+                    print("Opción no válida")
+            elif equip_option == "7":
                 continue
             else:
                 print("Opción no válida")
@@ -454,38 +423,6 @@ try:
                 continue
             else:
                 print("Opción no válida")
-
-        # elif option == "2":
-        #     print("Menú de gestión de usuarios:")
-        #     print("1. Crear usuario")
-        #     print("2. Borrar usuario")
-        #     print("3. Modificar usuario")
-        #     print("4. Obtener información de un usuario")
-        #     print("5. Obtener información de todos los usuarios")
-        #     print("6. Volver al menú principal")
-        #     usuar_option = input("Seleccione una opción: ")
-        #     if usuar_option == "1":
-        #         nombre = input("Ingrese nombre del usuario: ")
-        #         rut = input("Ingrese RUT del usuario: ")
-        #         email = input("Ingrese email del usuario: ")
-        #         crear_usuario(nombre, rut, email)
-        #     elif usuar_option == "2":
-        #         rut = input("Ingrese RUT del usuario: ")
-        #         borrar_usuario(rut)
-        #     elif usuar_option == "3":
-        #         nombre = input("Ingrese nombre del usuario: ")
-        #         rut = input("Ingrese RUT del usuario: ")
-        #         email = input("Ingrese email del usuario: ")
-        #         modificar_usuario(nombre, rut, email)
-        #     elif usuar_option == "4":
-        #         rut = input("Ingrese RUT del usuario: ")
-        #         obtener_info_usuario(rut)
-        #     elif usuar_option == "5":
-        #         obtener_info_todos_usuarios()
-        #     elif usuar_option == "6":
-        #         continue
-        #     else:
-        #         print("Opción no válida")
         
         elif option == "3":
             print("Menú de gestión de alimentos:")
