@@ -4,7 +4,8 @@
 > [!CAUTION]
 > Se requiere instalar mysql-connector-python, mysql
 
-> [!IMPORTANT]
-> Para iniciar los servicios se pueden iniciar todos con `python services/startServices.py`
-> Para iniciar el cliente se utiliza `python cliente.py`
-> Es necesario crear la db de la carpeta 'database', ya sea en docker o fuera de este
+
+### Iniciar Sistema
+- Para iniciar los servicios se pueden iniciar todos con `python services/startServices.py`
+- Para iniciar el cliente se utiliza `python cliente.py`
+- Es necesario crear la db de la carpeta 'database', ya sea en docker o fuera de este
