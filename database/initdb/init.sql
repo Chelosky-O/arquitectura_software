@@ -1,4 +1,4 @@
-CREATE DATABASE CyberCafeManager;
+CREATE DATABASE IF NOT EXISTS CyberCafeManager;
 
 USE CyberCafeManager;
 
