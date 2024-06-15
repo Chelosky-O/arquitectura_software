@@ -50,6 +50,9 @@ def arrendar_equipo(payload):
         fecha_inicio = datetime.now()
         fecha_fin = fecha_inicio + timedelta(hours=tiempo_arriendo)
         
+        #CAMBIAR PARA CAMBIAR HORAS POR SEGUNDOS
+        #fecha_fin = fecha_inicio + timedelta(seconds=tiempo_arriendo)
+        
         # Formatear fechas para la consulta SQL
         fecha_inicio_str = fecha_inicio.strftime('%Y-%m-%d %H:%M:%S')
         fecha_fin_str = fecha_fin.strftime('%Y-%m-%d %H:%M:%S')
