@@ -354,6 +354,52 @@ def generar_informe_ventas():
     else:
         print("Error al generar el informe: ", response_parts[1])
 
+# Funciones para la gestión de juegos
+def agregar_juego(nombre, descripcion, id_equipo):
+    data = f"{nombre},{descripcion},{id_equipo}"
+    response = send_message("JUEGO", "CODAJ", data)
+    print(f"Juego: {nombre} ha sido añadido con ID: {response.split(',')[1]}")
+
+def quitar_juego(id_juego):
+    response = send_message("JUEGO", "CODQJ", str(id_juego))
+    print(f"Juego de ID: {id_juego} ha sido eliminado")
+
+def modificar_juego(id_juego, nombre, descripcion, id_equipo):
+    data = f"{id_juego},{nombre},{descripcion},{id_equipo}"
+    response = send_message("JUEGO", "CODMJ", data)
+    print(f"Datos del juego de ID: {id_juego} han sido modificados")
+
+def obtener_info_juego(id_juego):
+    response = send_message("JUEGO", "CODIU", str(id_juego))
+    response_parts = response.split(',')
+    if response_parts[0] == "JUEGOOK":
+        id_juego = response_parts[1]
+        nombre = response_parts[2]
+        descripcion = response_parts[3]
+        id_equipo = response_parts[4]
+        print(f"ID: {id_juego}")
+        print(f"Nombre: {nombre}")
+        print(f"Descripción: {descripcion}")
+        print(f"ID Equipo: {id_equipo}")
+    else:
+        print("Juego no encontrado")
+
+def obtener_info_todos_juegos():
+    response = send_message("JUEGO", "CODIT", "")
+    response = response[10:]  # Assuming we need to strip the first 10 characters
+    juegos = response.split('|')
+    for juego in juegos:
+        response_parts = juego.split(',')
+        id_juego = response_parts[0]
+        nombre = response_parts[1]
+        descripcion = response_parts[2]
+        id_equipo = response_parts[3]
+        print(f"ID: {id_juego}")
+        print(f"Nombre: {nombre}")
+        print(f"Descripción: {descripcion}")
+        print(f"ID Equipo: {id_equipo}")
+        print("-----------------")
+
 # Ejemplos de uso
 try:
     while True:
@@ -361,11 +407,12 @@ try:
         print("1. Gestión de equipos")
         print("2. Gestión de usuarios")
         print("3. Gestión de alimentos")
-        print("4. Arriendo de equipos")
-        print("5. Venta de alimentos")
-        print("6. Registro de ganancias")
-        print("7. Informes")
-        print("8. Salir")
+        print("4. Gestión de juegos")
+        print("5. Arriendo de equipos")
+        print("6. Venta de alimentos")
+        print("7. Registro de ganancias")
+        print("8. Informes")
+        print("9. Salir")
         option = input("Seleccione una opción: ")
         
         if option == "1":
@@ -464,8 +511,39 @@ try:
                 continue
             else:
                 print("Opción no válida")
-        
         elif option == "4":
+            print("Menú de gestión de juegos:")
+            print("1. Agregar juego")
+            print("2. Quitar juego")
+            print("3. Modificar juego")
+            print("4. Obtener información de un juego")
+            print("5. Obtener información de todos los juegos")
+            print("6. Volver al menú principal")
+            juego_option = input("Seleccione una opción: ")
+            if juego_option == "1":
+                nombre = input("Ingrese nombre del juego: ")
+                descripcion = input("Ingrese descripción del juego: ")
+                id_equipo = input("Ingrese ID del equipo asociado al juego: ")
+                agregar_juego(nombre, descripcion, id_equipo)
+            elif juego_option == "2":
+                id_juego = input("Ingrese ID del juego: ")
+                quitar_juego(id_juego)
+            elif juego_option == "3":
+                id_juego = input("Ingrese ID del juego: ")
+                nombre = input("Ingrese nuevo nombre del juego: ")
+                descripcion = input("Ingrese nueva descripción del juego: ")
+                id_equipo = input("Ingrese nuevo ID del equipo asociado al juego: ")
+                modificar_juego(id_juego, nombre, descripcion, id_equipo)
+            elif juego_option == "4":
+                id_juego = input("Ingrese ID del juego: ")
+                obtener_info_juego(id_juego)
+            elif juego_option == "5":
+                obtener_info_todos_juegos()
+            elif juego_option == "6":
+                continue
+            else:
+                print("Opción no válida")
+        elif option == "5":
             print("Menú de arriendo de equipos:")
             print("1. Arrendar equipo")
             print("2. Volver al menú principal")
@@ -480,7 +558,7 @@ try:
             else:
                 print("Opción no válida")
                 
-        elif option == "5":
+        elif option == "6":
             print("Menú de venta de alimentos:")
             print("1. Vender alimento")
             print("2. Volver al menú principal")
@@ -496,7 +574,7 @@ try:
                 print("Opción no válida")
 
                 
-        elif option == "6":
+        elif option == "7":
             print("Menú de registro de ganancias:")
             print("1. Obtener registro de ganancias por arriendo de equipos")
             print("2. Obtener registro de ganancias por venta de alimentos")
@@ -515,7 +593,7 @@ try:
             else:
                 print("Opción no válida")
                 
-        elif option == "7":
+        elif option == "8":
             print("Menú de informes:")
             print("1. Generar informe de ganancia por tipos de equipos")
             print("2. Generar informe de uso de equipos")
@@ -533,7 +611,7 @@ try:
             else:
                 print("Opción no válida")   
                      
-        elif option == "8":
+        elif option == "9":
             break
         
         else:
