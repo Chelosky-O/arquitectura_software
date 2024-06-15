@@ -322,18 +322,19 @@ def generar_informe_ganancia_equipos():
 
 def generar_informe_uso_equipos():
     response = send_message("INFOR", "CODGU", "")
-    response_parts = response.split(',',1)
+    response_parts = response.split(',', 1)
     if response_parts[0] == "INFOROKOK":
         print("Uso de equipos:")
         uso_equipos = response_parts[1]  # All except the first element
-        #print(uso_equipos)
         uso_equipos = uso_equipos.split('|')
-        #print(uso_equipos)
         for equipo in uso_equipos:
-            id_equipo, nombre, tiempo = equipo.split(',')
-            print(f"ID Equipo: {id_equipo}, Nombre: {nombre}, Tiempo: {tiempo}")
+            id_equipo, nombre, tiempo, monto = equipo.split(',')
+            print(f"ID Equipo: {id_equipo}, Nombre: {nombre}, Tiempo: {tiempo}, Monto total: {monto}")
     else:
         print("Error al generar el informe: ", response_parts[1])
+
+        
+
 
 def generar_informe_ventas():
     response = send_message("INFOR", "CODGV", "")

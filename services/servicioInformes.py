@@ -46,14 +46,20 @@ def generar_informe_ganancia_equipos():
 
 def generar_informe_uso_equipos():
     try:
-        query = "SELECT Equipos.id, Equipos.nombre, SUM(Arriendos.tiempo_arriendo) FROM Arriendos JOIN Equipos ON Arriendos.id_equipo = Equipos.id GROUP BY Equipos.id, Equipos.nombre"
+        query = """
+        SELECT Equipos.id, Equipos.nombre, SUM(Arriendos.tiempo_arriendo), SUM(Arriendos.monto) 
+        FROM Arriendos 
+        JOIN Equipos ON Arriendos.id_equipo = Equipos.id 
+        GROUP BY Equipos.id, Equipos.nombre
+        """
         cursor.execute(query)
         results = cursor.fetchall()
-        uso_equipos = "|".join([f"{row[0]},{row[1]},{row[2]}" for row in results])
+        uso_equipos = "|".join([f"{row[0]},{row[1]},{row[2]},{row[3]}" for row in results])
         response = f"INFOROK,{uso_equipos}"
         return response
     except Exception as e:
         return f"INFORNK,Error: {str(e)}"
+
 
 def generar_informe_ventas():
     try:
