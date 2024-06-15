@@ -1,5 +1,10 @@
 import socket
 import json
+import openpyxl
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, PatternFill, Font
+import os
+from datetime import datetime
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -122,18 +127,29 @@ def obtener_dispositivos_no_disponibles():
     for dispositivo in dispositivos:
         print(dispositivo)    
 
-# Funciones para la gestión de usuarios
 def añadir_usuario(nombre, rut, email):
+    if len(rut) > 9:
+        print("Error: El RUT no puede tener más de 9 dígitos.")
+        return
+    
     data = f"{nombre},{rut},{email}"
     response = send_message("USUAR", "CODAU", data)
     print(f"Usuario de RUT: {rut} ha sido añadido")
 
 def eliminar_usuario(rut):
+    if len(rut) > 9:
+        print("Error: El RUT no puede tener más de 9 dígitos.")
+        return
+    
     response = send_message("USUAR", "CODEU", str(rut))
     print(f"Usuario de RUT: {rut} ha sido eliminado")
 
 def modificar_usuario():
     rut = input("Ingrese el RUT del usuario a modificar: ")
+    if len(rut) > 9:
+        print("Error: El RUT no puede tener más de 9 dígitos.")
+        return
+    
     nombre = input("Ingrese el nuevo nombre del usuario: ")
     email = input("Ingrese el nuevo email del usuario: ")
     data = f"{rut},{nombre},{email}"
@@ -141,6 +157,10 @@ def modificar_usuario():
     print(f"Datos del usuario de RUT: {rut} han sido modificados")
 
 def obtener_info_usuario(rut):
+    if len(rut) > 9:
+        print("Error: El RUT no puede tener más de 9 dígitos.")
+        return
+    
     response = send_message("USUAR", "CODIU", str(rut))
     
     response_parts = response.split(',')
@@ -301,60 +321,160 @@ def obtener_ganancias_ventas(fecha_inicio, fecha_fin):
 
     
     
-# Funciones para la generación de informes
-def generar_informe_ganancia_equipos():
+# Directorio base donde se guardarán los informes
+base_directory = "informes"
+
+# Funciones para generar informes en Excel
+def generar_excel_ganancia_equipos():
     response = send_message("INFOR", "CODGG", "")
-    response_parts = response.split(',',1)
-    print(response_parts)
+    response_parts = response.split(',', 1)
     if response_parts[0] == "INFOROKOK":
-        print("Montos por tipo de equipo:")
         montos_por_tipo = response_parts[1].split('|')
         
-        for i, tipo_monto in enumerate(montos_por_tipo):
+        # Obtener la fecha actual para crear la carpeta
+        fecha_actual = datetime.now().strftime("%Y-%m-%d")
+        
+        # Crear la ruta completa de la carpeta y el archivo
+        folder_path = os.path.join(base_directory, fecha_actual)
+        os.makedirs(folder_path, exist_ok=True)
+        
+        file_name = f"ganancia_equipos.xlsx"
+        file_path = os.path.join(folder_path, file_name)
+        
+        # Crear el archivo Excel y escribir los datos
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Ganancia Equipos"
+        
+        # Formato para las celdas
+        header_fill = PatternFill(start_color="0072C6", end_color="0072C6", fill_type="solid")
+        header_font = Font(color="FFFFFF", bold=True)
+        cell_alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Agregar datos al Excel
+        ws.append(["Tipo de Equipo", "Monto"])
+        for tipo_monto in montos_por_tipo:
             subpartes = tipo_monto.split(',')
-            if i < len(montos_por_tipo) - 1:  # Todos excepto el último elemento
-                print(f"Equipo {i + 1}: {subpartes[0]},{subpartes[1]}")
-            else:  # Último elemento
-                print(f"Equipo {i + 1}: {subpartes[0]},{subpartes[1]}")
-                print(f"Monto total: {subpartes[-1]}")
+            ws.append([subpartes[0], float(subpartes[1])])  # Convertir monto a float si es necesario
+            
+        # Establecer estilo para las celdas
+        for row in ws.iter_rows(min_row=1, max_row=1):
+            for cell in row:
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = cell_alignment
+        
+        # Ajustar ancho de columnas
+        ws.column_dimensions['A'].width = 20
+        ws.column_dimensions['B'].width = 15
+        
+        # Guardar el archivo Excel
+        wb.save(file_path)
+        print(f"Informe de ganancia por tipos de equipos generado: {file_path}")
     else:
         print("Error al generar el informe: ", response_parts[1])
 
-def generar_informe_uso_equipos():
+def generar_excel_uso_equipos():
     response = send_message("INFOR", "CODGU", "")
     response_parts = response.split(',', 1)
     if response_parts[0] == "INFOROKOK":
-        print("Uso de equipos:")
-        uso_equipos = response_parts[1]  # All except the first element
-        uso_equipos = uso_equipos.split('|')
+        uso_equipos = response_parts[1].split('|')
+        
+        # Obtener la fecha actual para crear la carpeta
+        fecha_actual = datetime.now().strftime("%Y-%m-%d")
+        
+        # Crear la ruta completa de la carpeta y el archivo
+        folder_path = os.path.join(base_directory, fecha_actual)
+        os.makedirs(folder_path, exist_ok=True)
+        
+        file_name = f"uso_equipos.xlsx"
+        file_path = os.path.join(folder_path, file_name)
+        
+        # Crear el archivo Excel y escribir los datos
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Uso Equipos"
+        
+        # Formato para las celdas
+        header_fill = PatternFill(start_color="92D050", end_color="92D050", fill_type="solid")
+        header_font = Font(color="FFFFFF", bold=True)
+        cell_alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Agregar datos al Excel
+        ws.append(["ID Equipo", "Nombre", "Tiempo de Uso", "Monto Total"])
         for equipo in uso_equipos:
             id_equipo, nombre, tiempo, monto = equipo.split(',')
-            print(f"ID Equipo: {id_equipo}, Nombre: {nombre}, Tiempo: {tiempo}, Monto total: {monto}")
+            ws.append([id_equipo, nombre, float(tiempo), float(monto)])  # Convertir tiempo y monto a float si es necesario
+        
+        # Establecer estilo para las celdas
+        for row in ws.iter_rows(min_row=1, max_row=1):
+            for cell in row:
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = cell_alignment
+        
+        # Ajustar ancho de columnas
+        ws.column_dimensions['A'].width = 12
+        ws.column_dimensions['B'].width = 20
+        ws.column_dimensions['C'].width = 15
+        ws.column_dimensions['D'].width = 15
+        
+        # Guardar el archivo Excel
+        wb.save(file_path)
+        print(f"Informe de uso de equipos generado: {file_path}")
     else:
         print("Error al generar el informe: ", response_parts[1])
 
-        
-
-
-def generar_informe_ventas():
+def generar_excel_ventas_alimentos():
     response = send_message("INFOR", "CODGV", "")
-    response_parts = response.split(',',1)
+    response_parts = response.split(',', 1)
     if response_parts[0] == "INFOROKOK":
-        print("Ventas de alimentos:")
-        ventas_alimentos = response_parts[1].split('|')  # All except the first and last elements
-
-        for i, alimento in enumerate(ventas_alimentos):
-            subpartes = alimento.split(',')
-            print(subpartes)
-            if i < len(ventas_alimentos) - 1:  # Todos excepto el último elemento
-                print(f"Alimento {i + 1}: ID {subpartes[0]},Nombre {subpartes[1]},Monto {subpartes[2]} ")
-            else:  # Último elemento
-                print(f"Alimento {i + 1}: ID {subpartes[0]},Nombre {subpartes[1]},Monto {subpartes[2]} ")
-                print(f"Monto total: {subpartes[-1]}")
+        ventas_alimentos = response_parts[1].split('|')
         
+        # Obtener la fecha actual para crear la carpeta
+        fecha_actual = datetime.now().strftime("%Y-%m-%d")
+        
+        # Crear la ruta completa de la carpeta y el archivo
+        folder_path = os.path.join(base_directory, fecha_actual)
+        os.makedirs(folder_path, exist_ok=True)
+        
+        file_name = f"ventas_alimentos.xlsx"
+        file_path = os.path.join(folder_path, file_name)
+        
+        # Crear el archivo Excel y escribir los datos
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Ventas Alimentos"
+        
+        # Formato para las celdas
+        header_fill = PatternFill(start_color="FFC000", end_color="FFC000", fill_type="solid")
+        header_font = Font(color="FFFFFF", bold=True)
+        cell_alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Agregar datos al Excel
+        ws.append(["ID Alimento", "Nombre", "Monto"])
+        for alimento in ventas_alimentos:
+            subpartes = alimento.split(',')
+            ws.append([subpartes[0], subpartes[1], float(subpartes[2])])  # Convertir monto a float si es necesario
+        
+        # Establecer estilo para las celdas
+        for row in ws.iter_rows(min_row=1, max_row=1):
+            for cell in row:
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = cell_alignment
+        
+        # Ajustar ancho de columnas
+        ws.column_dimensions['A'].width = 12
+        ws.column_dimensions['B'].width = 20
+        ws.column_dimensions['C'].width = 15
+        
+        # Guardar el archivo Excel
+        wb.save(file_path)
+        print(f"Informe de ventas de alimentos generado: {file_path}")
     else:
         print("Error al generar el informe: ", response_parts[1])
-
+        
 # Funciones para la gestión de juegos
 def agregar_juego(nombre, descripcion, id_equipo):
     data = f"{nombre},{descripcion},{id_equipo}"
@@ -459,26 +579,45 @@ try:
             print("4. Obtener información de un usuario")
             print("5. Obtener información de todos los usuarios")
             print("6. Volver al menú principal")
-            usuar_option = input("Seleccione una opción: ")
-            if usuar_option == "1":
-                nombre = input("Ingrese nombre del usuario: ")
-                rut = input("Ingrese RUT del usuario: ")
-                email = input("Ingrese email del usuario: ")
-                añadir_usuario(nombre, rut, email)
-            elif usuar_option == "2":
-                rut = input("Ingrese RUT del usuario: ")
-                eliminar_usuario(rut)
-            elif usuar_option == "3":
-                modificar_usuario()
-            elif usuar_option == "4":
-                rut = input("Ingrese RUT del usuario: ")
-                obtener_info_usuario(rut)
-            elif usuar_option == "5":
-                obtener_info_todos_usuarios()
-            elif usuar_option == "6":
-                continue
-            else:
-                print("Opción no válida")
+            
+            while True:
+                usuar_option = input("Seleccione una opción: ")
+                
+                if usuar_option == "1":
+                    nombre = input("Ingrese nombre del usuario: ")
+                    rut = input("Ingrese RUT del usuario: ")
+                    if len(rut) > 9:
+                        print("Error: El RUT no puede tener más de 9 dígitos, intentelo nuevamente")
+                        continue
+                    email = input("Ingrese email del usuario: ")
+                    añadir_usuario(nombre, rut, email)
+                
+                elif usuar_option == "2":
+                    rut = input("Ingrese RUT del usuario: ")
+                    if len(rut) > 9:
+                        print("Error: El RUT no puede tener más de 9 dígitos, intentelo nuevamente")
+                        continue
+                    eliminar_usuario(rut)
+                
+                elif usuar_option == "3":
+                    modificar_usuario()
+                
+                elif usuar_option == "4":
+                    rut = input("Ingrese RUT del usuario: ")
+                    if len(rut) > 9:
+                        print("Error: El RUT no puede tener más de 9 dígitos, intentelo nuevamente")
+                        continue
+                    obtener_info_usuario(rut)
+                
+                elif usuar_option == "5":
+                    obtener_info_todos_usuarios()
+                
+                elif usuar_option == "6":
+                    break  # Salir del bucle y volver al menú principal
+                
+                else:
+                    print("Opción no válida")
+
         
         elif option == "3":
             print("Menú de gestión de alimentos:")
@@ -596,21 +735,21 @@ try:
                 
         elif option == "8":
             print("Menú de informes:")
-            print("1. Generar informe de ganancia por tipos de equipos")
-            print("2. Generar informe de uso de equipos")
-            print("3. Generar informe de ventas de alimentos")
+            print("1. Generar informe de ganancia de equipos (Excel)")
+            print("2. Generar informe de uso de equipos (Excel)")
+            print("3. Generar informe de ventas de alimentos (Excel)")
             print("4. Volver al menú principal")
-            infor_option = input("Seleccione una opción: ")
-            if infor_option == "1":
-                generar_informe_ganancia_equipos()
-            elif infor_option == "2":
-                generar_informe_uso_equipos()
-            elif infor_option == "3":
-                generar_informe_ventas()
-            elif infor_option == "4":
+            informe_option = input("Seleccione una opción: ")
+            if informe_option == "1":
+                generar_excel_ganancia_equipos()
+            elif informe_option == "2":
+                generar_excel_uso_equipos()
+            elif informe_option == "3":
+                generar_excel_ventas_alimentos()
+            elif informe_option == "4":
                 continue
             else:
-                print("Opción no válida")   
+                print("Opción no válida")
                      
         elif option == "9":
             break

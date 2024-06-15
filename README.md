@@ -2,7 +2,7 @@
 ## Cyber Café Mánager (CCM)
 
 > [!CAUTION]
-> Se requiere instalar mysql-connector-python, mysql
+> Se requiere instalar mysql-connector-python, mysql, openpyxl
 
 
 ### Iniciar Sistema
