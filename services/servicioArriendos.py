@@ -30,7 +30,7 @@ def handle_request(data):
 
 def arrendar_equipo(payload):
     try:
-        rut_cliente, id_equipo, tiempo_arriendo = payload.split(',')
+        rut_usuario, id_equipo, tiempo_arriendo = payload.split(',')
         tiempo_arriendo = int(tiempo_arriendo)
         
         # Verificar si el dispositivo ya está arrendado
@@ -48,10 +48,10 @@ def arrendar_equipo(payload):
         
         # Calcular fecha_inicio y fecha_fin
         fecha_inicio = datetime.now()
-        fecha_fin = fecha_inicio + timedelta(hours=tiempo_arriendo)
+        #fecha_fin = fecha_inicio + timedelta(hours=tiempo_arriendo)
         
         #CAMBIAR PARA CAMBIAR HORAS POR SEGUNDOS
-        #fecha_fin = fecha_inicio + timedelta(seconds=tiempo_arriendo)
+        fecha_fin = fecha_inicio + timedelta(seconds=tiempo_arriendo)
         
         # Formatear fechas para la consulta SQL
         fecha_inicio_str = fecha_inicio.strftime('%Y-%m-%d %H:%M:%S')
@@ -60,7 +60,7 @@ def arrendar_equipo(payload):
         # Registrar el arriendo en la base de datos
         query = (
             f"INSERT INTO Arriendos (id_equipo, rut_usuario, fecha, tiempo_arriendo, monto, fecha_fin) "
-            f"VALUES ({id_equipo}, {rut_cliente}, '{fecha_inicio_str}', {tiempo_arriendo}, {monto}, '{fecha_fin_str}')"
+            f"VALUES ({id_equipo}, {rut_usuario}, '{fecha_inicio_str}', {tiempo_arriendo}, {monto}, '{fecha_fin_str}')"
         )
         print(query)  # Agrega esta línea para depuración
         cursor.execute(query)

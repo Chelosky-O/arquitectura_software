@@ -253,17 +253,17 @@ def obtener_info_todos_alimentos():
         print("-----------------")
     #print(f"Respuesta: {response}")
 
-def arrendar_equipo(rut_cliente, id_equipo, tiempo_arriendo):
-    data = f"{rut_cliente},{id_equipo},{tiempo_arriendo}"
+def arrendar_equipo(rut_usuario, id_equipo, tiempo_arriendo):
+    data = f"{rut_usuario},{id_equipo},{tiempo_arriendo}"
     response = send_message("ARRIE", "CODAE", data)
     
     response_parts = response.split(',')
-    print(response_parts[0])
     if response_parts[0] == "ARRIEOKOK":
         fecha = response_parts[1]
         monto = response_parts[2]
         fecha_fin = response_parts[3]
-        print(f"Arriendo exitoso: Fecha inicio: {fecha},Fecha final: {fecha_fin}, Monto : {monto}")
+        print(f"¡Arriendo exitoso! Usuario: {rut_usuario} - Equipo: {id_equipo})")
+        print(f"Fecha inicio: {fecha} - Fecha final: {fecha_fin} - Monto: {monto}")
     else:
         print("Error: ", response_parts[1])
 
@@ -275,10 +275,13 @@ def vender_alimento(rut_usuario, nombre_alimento, cantidad):
     response = send_message("VENAL", "CODAC", data)
     
     response_parts = response.split(',')
-    print(response_parts[0])
     if response_parts[0] == "VENALOKOK":
         total = response_parts[1]
-        print(f"Total: {total}")
+        print("Venta exitosa:")
+        print(f"-Usuario: {rut_usuario}")
+        print(f"-Producto: {nombre_alimento}")
+        print(f"-Cantidad: {cantidad}")      
+        print(f"-Monto total: {total}")
     else:
         print("Error: ", response_parts[1])
 
@@ -304,9 +307,7 @@ def obtener_ganancias_arriendo(fecha_inicio, fecha_fin):
 def obtener_ganancias_ventas(fecha_inicio, fecha_fin):
     data = f"{fecha_inicio},{fecha_fin}"
     response = send_message("REGAN", "CODVA", data)
-    
     response_parts = response.split(',',1)
-    print(response_parts)
     if response_parts[0] == "REGANOKOK":
         ganancias = response_parts[1].split('|')
         for ganancia in ganancias:
@@ -476,13 +477,13 @@ def generar_excel_ventas_alimentos():
         print("Error al generar el informe: ", response_parts[1])
         
 # Funciones para la gestión de juegos
-def agregar_juego(nombre, descripcion, id_equipo):
+def añadir_juego(nombre, descripcion, id_equipo):
     data = f"{nombre},{descripcion},{id_equipo}"
     response = send_message("JUEGO", "CODAJ", data)
     print(f"Juego: {nombre} ha sido añadido con ID: {response.split(',')[1]}")
 
-def quitar_juego(id_juego):
-    response = send_message("JUEGO", "CODQJ", str(id_juego))
+def eliminar_juego(id_juego):
+    response = send_message("JUEGO", "CODEJ", str(id_juego))
     print(f"Juego de ID: {id_juego} ha sido eliminado")
 
 def modificar_juego(id_juego, nombre, descripcion, id_equipo):
@@ -653,8 +654,8 @@ try:
                 print("Opción no válida")
         elif option == "4":
             print("Menú de gestión de juegos:")
-            print("1. Agregar juego")
-            print("2. Quitar juego")
+            print("1. Añadir juego")
+            print("2. Eliminar juego")
             print("3. Modificar juego")
             print("4. Obtener información de un juego")
             print("5. Obtener información de todos los juegos")
@@ -664,10 +665,10 @@ try:
                 nombre = input("Ingrese nombre del juego: ")
                 descripcion = input("Ingrese descripción del juego: ")
                 id_equipo = input("Ingrese ID del equipo asociado al juego: ")
-                agregar_juego(nombre, descripcion, id_equipo)
+                añadir_juego(nombre, descripcion, id_equipo)
             elif juego_option == "2":
                 id_juego = input("Ingrese ID del juego: ")
-                quitar_juego(id_juego)
+                eliminar_juego(id_juego)
             elif juego_option == "3":
                 id_juego = input("Ingrese ID del juego: ")
                 nombre = input("Ingrese nuevo nombre del juego: ")
@@ -689,10 +690,10 @@ try:
             print("2. Volver al menú principal")
             arrie_option = input("Seleccione una opción: ")
             if arrie_option == "1":
-                rut_cliente = input("Ingrese RUT del cliente: ")
+                rut_usuario = input("Ingrese RUT del usuario: ")
                 id_equipo = input("Ingrese ID del equipo: ")
                 tiempo_arriendo = input("Ingrese tiempo de arriendo en horas: ")
-                arrendar_equipo(rut_cliente, id_equipo, tiempo_arriendo)
+                arrendar_equipo(rut_usuario, id_equipo, tiempo_arriendo)
             elif arrie_option == "2":
                 continue
             else:

@@ -25,9 +25,9 @@ def handle_request(data):
     action = data[:5]
     payload = data[5:]
     if action == "CODAJ":
-        return agregar_juego(payload)
-    elif action == "CODQJ":
-        return quitar_juego(payload)
+        return añadir_juego(payload)
+    elif action == "CODEJ":
+        return eliminar_juego(payload)
     elif action == "CODMJ":
         return modificar_juego(payload)
     elif action == "CODIU":
@@ -37,14 +37,14 @@ def handle_request(data):
     else:
         return "JUEGONK, Acción inválida"
 
-def agregar_juego(payload):
+def añadir_juego(payload):
     nombre, descripcion, id_equipo = payload.split(',')
     query = f"INSERT INTO Juegos (nombre, descripcion, id_equipo) VALUES ('{nombre}', '{descripcion}', {id_equipo})"
     cursor.execute(query)
     db_connection.commit()
     return f"JUEGOOK,{cursor.lastrowid}"
 
-def quitar_juego(id_juego):
+def eliminar_juego(id_juego):
     query = f"DELETE FROM Juegos WHERE id={id_juego}"
     cursor.execute(query)
     db_connection.commit()
