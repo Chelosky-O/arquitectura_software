@@ -493,7 +493,7 @@ def modificar_juego(id_juego, nombre, descripcion, id_equipo):
 def obtener_info_juego(id_juego):
     response = send_message("JUEGO", "CODIU", str(id_juego))
     response_parts = response.split(',')
-    if response_parts[0] == "JUEGOOK":
+    if response_parts[0] == "JUEGOOKOK":
         id_juego = response_parts[1]
         nombre = response_parts[2]
         descripcion = response_parts[3]
