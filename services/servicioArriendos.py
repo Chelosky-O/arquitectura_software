@@ -3,16 +3,6 @@ import sys
 import mysql.connector
 from datetime import datetime, timedelta
 
-# Conectar a la base de datos
-db_connection = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root_password",
-    database="CyberCafeManager"
-)
-
-cursor = db_connection.cursor()
-
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -30,6 +20,14 @@ def handle_request(data):
 
 def arrendar_equipo(payload):
     try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
         rut_usuario, id_equipo, tiempo_arriendo = payload.split(',')
         tiempo_arriendo = int(tiempo_arriendo)
         
@@ -48,9 +46,6 @@ def arrendar_equipo(payload):
         
         # Calcular fecha_inicio y fecha_fin
         fecha_inicio = datetime.now()
-        #fecha_fin = fecha_inicio + timedelta(hours=tiempo_arriendo)
-        
-        #CAMBIAR PARA CAMBIAR HORAS POR SEGUNDOS
         fecha_fin = fecha_inicio + timedelta(seconds=tiempo_arriendo)
         
         # Formatear fechas para la consulta SQL
@@ -75,8 +70,9 @@ def arrendar_equipo(payload):
         return f"ARRIEOK,{fecha},{monto},{fecha_fin}"
     except Exception as e:
         return f"ARRIENK,Error: {str(e)}"
-
-
+    finally:
+        cursor.close()
+        db_connection.close()
 
 def calcular_cobro(id_equipo, tiempo_arriendo):
     try:
@@ -140,5 +136,3 @@ try:
 finally:
     print('closing socket')
     sock.close()
-    cursor.close()
-    db_connection.close()

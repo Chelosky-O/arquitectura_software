@@ -2,16 +2,6 @@ import socket
 import sys
 import mysql.connector
 
-# Conectar a la base de datos
-db_connection = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root_password",
-    database="CyberCafeManager"
-)
-
-cursor = db_connection.cursor()
-
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -30,6 +20,14 @@ def handle_request(data):
 def cobrar_por_equipo(payload):
     print(payload)
     try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
         id_equipo, tiempo_arriendo = payload.split(',')
         tiempo_arriendo = int(tiempo_arriendo)
         
@@ -45,6 +43,9 @@ def cobrar_por_equipo(payload):
             return "COBRONK, Equipo no encontrado"
     except Exception as e:
         return f"COBRONK,Error: {str(e)}"
+    finally:
+        cursor.close()
+        db_connection.close()
 
 try:
     message = b'00010sinitCOBRO'
@@ -74,5 +75,3 @@ try:
 finally:
     print('closing socket')
     sock.close()
-    cursor.close()
-    db_connection.close()

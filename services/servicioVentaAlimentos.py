@@ -2,16 +2,6 @@ import socket
 import sys
 import mysql.connector
 
-# Conectar a la base de datos
-db_connection = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root_password",
-    database="CyberCafeManager"
-)
-
-cursor = db_connection.cursor()
-
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -29,6 +19,14 @@ def handle_request(data):
 
 def vender_alimento(payload):
     try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
         rut_usuario, nombre_alimento, cantidad = payload.split(',')
         cantidad = int(cantidad)
         
@@ -60,6 +58,9 @@ def vender_alimento(payload):
             return "VENALNK,Alimento no encontrado"
     except Exception as e:
         return f"VENALNK,Error: {str(e)}"
+    finally:
+        cursor.close()
+        db_connection.close()
 
 try:
     message = b'00010sinitVENAL'
@@ -89,5 +90,3 @@ try:
 finally:
     print('closing socket')
     sock.close()
-    cursor.close()
-    db_connection.close()

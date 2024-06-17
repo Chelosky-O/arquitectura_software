@@ -2,16 +2,6 @@ import socket
 import sys
 import mysql.connector
 
-# Conectar a la base de datos
-db_connection = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root_password",
-    database="CyberCafeManager"
-)
-
-cursor = db_connection.cursor()
-
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -37,50 +27,107 @@ def handle_request(data):
         return "USUARNK, Acción inválida"
 
 def añadir_usuario(payload):
-    nombre, rut, email = payload.split(',')
-    query = f"INSERT INTO Usuarios (rut, nombre, email) VALUES ('{rut}', '{nombre}', '{email}')"
     try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
+        nombre, rut, email = payload.split(',')
+        query = f"INSERT INTO Usuarios (rut, nombre, email) VALUES ('{rut}', '{nombre}', '{email}')"
         cursor.execute(query)
         db_connection.commit()
         return "USUAROK,Usuario creado"
     except mysql.connector.Error as err:
         return f"USUARNK, Error: {err}"
+    finally:
+        cursor.close()
+        db_connection.close()
 
 def eliminar_usuario(rut):
-    query = f"DELETE FROM Usuarios WHERE rut='{rut}'"
     try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
+        query = f"DELETE FROM Usuarios WHERE rut='{rut}'"
         cursor.execute(query)
         db_connection.commit()
         return "USUAROK,Usuario eliminado"
     except mysql.connector.Error as err:
         return f"USUARNK, Error: {err}"
+    finally:
+        cursor.close()
+        db_connection.close()
 
 def modificar_usuario(payload):
-    rut, nombre, email = payload.split(',')
-    query = f"UPDATE Usuarios SET nombre='{nombre}', email='{email}' WHERE rut='{rut}'"
     try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
+        rut, nombre, email = payload.split(',')
+        query = f"UPDATE Usuarios SET nombre='{nombre}', email='{email}' WHERE rut='{rut}'"
         cursor.execute(query)
         db_connection.commit()
         return "USUAROK,Usuario modificado"
     except mysql.connector.Error as err:
         return f"USUARNK, Error: {err}"
+    finally:
+        cursor.close()
+        db_connection.close()
 
 def obtener_info_usuario(rut):
-    query = f"SELECT * FROM Usuarios WHERE rut='{rut}'"
-    cursor.execute(query)
-    result = cursor.fetchone()
-    if result:
-        response = f"USUAROK,{result[1]},{result[0]},{result[2]}"
-    else:
-        response = "USUARNK, Usuario no encontrado"
-    return response
+    try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
+        query = f"SELECT * FROM Usuarios WHERE rut='{rut}'"
+        cursor.execute(query)
+        result = cursor.fetchone()
+        if result:
+            response = f"USUAROK,{result[1]},{result[0]},{result[2]}"
+        else:
+            response = "USUARNK, Usuario no encontrado"
+        return response
+    finally:
+        cursor.close()
+        db_connection.close()
 
 def obtener_info_todos_usuarios():
-    query = "SELECT * FROM Usuarios"
-    cursor.execute(query)
-    results = cursor.fetchall()
-    response = "USUAROK," + "|".join([f"{row[1]},{row[0]},{row[2]}" for row in results])
-    return response
+    try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
+        query = "SELECT * FROM Usuarios"
+        cursor.execute(query)
+        results = cursor.fetchall()
+        response = "USUAROK," + "|".join([f"{row[1]},{row[0]},{row[2]}" for row in results])
+        return response
+    finally:
+        cursor.close()
+        db_connection.close()
 
 try:
     message = b'00010sinitUSUAR'
@@ -110,5 +157,3 @@ try:
 finally:
     print('closing socket')
     sock.close()
-    cursor.close()
-    db_connection.close()

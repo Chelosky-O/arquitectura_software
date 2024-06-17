@@ -2,16 +2,6 @@ import socket
 import sys
 import mysql.connector
 
-# Conectar a la base de datos
-db_connection = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root_password",
-    database="CyberCafeManager"
-)
-
-cursor = db_connection.cursor()
-
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -33,6 +23,14 @@ def handle_request(data):
 
 def generar_informe_ganancia_equipos():
     try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
         query = "SELECT tipo, SUM(Arriendos.monto) FROM Arriendos JOIN Equipos ON Arriendos.id_equipo = Equipos.id GROUP BY tipo"
         cursor.execute(query)
         results = cursor.fetchall()
@@ -43,9 +41,20 @@ def generar_informe_ganancia_equipos():
         return response
     except Exception as e:
         return f"INFORNK,Error: {str(e)}"
+    finally:
+        cursor.close()
+        db_connection.close()
 
 def generar_informe_uso_equipos():
     try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
         query = """
         SELECT Equipos.id, Equipos.nombre, SUM(Arriendos.tiempo_arriendo), SUM(Arriendos.monto) 
         FROM Arriendos 
@@ -59,10 +68,20 @@ def generar_informe_uso_equipos():
         return response
     except Exception as e:
         return f"INFORNK,Error: {str(e)}"
-
+    finally:
+        cursor.close()
+        db_connection.close()
 
 def generar_informe_ventas():
     try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
         query = "SELECT Alimentos.id, Alimentos.nombre, SUM(VentasAlimentos.total) FROM VentasAlimentos JOIN Alimentos ON VentasAlimentos.id_alimento = Alimentos.id GROUP BY Alimentos.id, Alimentos.nombre"
         cursor.execute(query)
         results = cursor.fetchall()
@@ -72,6 +91,9 @@ def generar_informe_ventas():
         return response
     except Exception as e:
         return f"INFORNK,Error: {str(e)}"
+    finally:
+        cursor.close()
+        db_connection.close()
 
 try:
     message = b'00010sinitINFOR'
@@ -101,5 +123,3 @@ try:
 finally:
     print('closing socket')
     sock.close()
-    cursor.close()
-    db_connection.close()

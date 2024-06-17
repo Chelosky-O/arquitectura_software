@@ -2,16 +2,6 @@ import socket
 import sys
 import mysql.connector
 
-# Conectar a la base de datos
-db_connection = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root_password",
-    database="CyberCafeManager"
-)
-
-cursor = db_connection.cursor()
-
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -31,6 +21,14 @@ def handle_request(data):
 
 def obtener_ganancias_arriendo(payload):
     try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
         fecha_inicio, fecha_fin = payload.split(',')
         query = f"SELECT fecha, monto FROM Arriendos WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
         cursor.execute(query)
@@ -43,9 +41,20 @@ def obtener_ganancias_arriendo(payload):
             return "REGANNK, No hay ganancias en el intervalo proporcionado"
     except Exception as e:
         return f"REGANNK,Error: {str(e)}"
+    finally:
+        cursor.close()
+        db_connection.close()
 
 def obtener_ganancias_ventas(payload):
     try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
         fecha_inicio, fecha_fin = payload.split(',')
         query = f"SELECT fecha, total FROM VentasAlimentos WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
         cursor.execute(query)
@@ -58,6 +67,9 @@ def obtener_ganancias_ventas(payload):
             return "REGANNK, No hay ganancias en el intervalo proporcionado"
     except Exception as e:
         return f"REGANNK,Error: {str(e)}"
+    finally:
+        cursor.close()
+        db_connection.close()
 
 try:
     message = b'00010sinitREGAN'
@@ -87,5 +99,3 @@ try:
 finally:
     print('closing socket')
     sock.close()
-    cursor.close()
-    db_connection.close()

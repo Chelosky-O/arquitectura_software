@@ -3,16 +3,6 @@ import sys
 import mysql.connector
 from datetime import datetime
 
-# Conectar a la base de datos
-db_connection = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root_password",
-    database="CyberCafeManager"
-)
-
-cursor = db_connection.cursor()
-
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -38,31 +28,53 @@ def handle_request(data):
         return "EQUIPNK, Acción inválida"
 
 def obtener_info_equipo(id_equipo):
+    db_connection = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root_password",
+        database="CyberCafeManager"
+    )
+    cursor = db_connection.cursor()
+    
     query = f"""
-    SELECT e.id, e.nombre, e.descripcion, e.tipo, e.tarifa, a.fecha_fin 
+    SELECT e.id, e.nombre, e.descripcion, e.tipo, e.tarifa, MAX(a.fecha_fin) AS max_fecha_fin
     FROM Equipos e
     LEFT JOIN Arriendos a ON e.id = a.id_equipo
     WHERE e.id = {id_equipo}
+    GROUP BY e.id, e.nombre, e.descripcion, e.tipo, e.tarifa
     """
     cursor.execute(query)
     result = cursor.fetchone()
+    
     if result:
-        id_equipo, nombre, descripcion, tipo, tarifa, fecha_fin = result
+        id_equipo, nombre, descripcion, tipo, tarifa, max_fecha_fin = result
         now = datetime.now().replace(microsecond=0)
-        if fecha_fin is None or fecha_fin.replace(microsecond=0) < now:
+        if max_fecha_fin is None or (max_fecha_fin and max_fecha_fin.replace(microsecond=0) < now):
             response = f"EQUIPOK,{id_equipo},{nombre},{descripcion},{tipo},{tarifa},No arrendado"
         else:
-            response = f"EQUIPOK,{id_equipo},{nombre},{descripcion},{tipo},{tarifa},{fecha_fin}"
+            response = f"EQUIPOK,{id_equipo},{nombre},{descripcion},{tipo},{tarifa},{max_fecha_fin}"
     else:
         response = "EQUIPNK, Equipo no encontrado"
+    
+    cursor.close()
+    db_connection.close()
     return response
 
+
 def obtener_info_todos_equipos():
-    # Recuperar todos los registros de equipos y arriendos
+    db_connection = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root_password",
+        database="CyberCafeManager"
+    )
+    cursor = db_connection.cursor()
+    
     query = """
-    SELECT e.id, e.nombre, e.descripcion, e.tipo, e.tarifa, a.fecha_fin 
+    SELECT e.id, e.nombre, e.descripcion, e.tipo, e.tarifa, MAX(a.fecha_fin) AS max_fecha_fin
     FROM Equipos e
     LEFT JOIN Arriendos a ON e.id = a.id_equipo
+    GROUP BY e.id, e.nombre, e.descripcion, e.tipo, e.tarifa
     """
     cursor.execute(query)
     results = cursor.fetchall()
@@ -72,33 +84,74 @@ def obtener_info_todos_equipos():
     dispositivos_arrendados = []
     now = datetime.now().replace(microsecond=0)
     for row in results:
-        id_equipo, nombre, descripcion, tipo, tarifa, fecha_fin = row
-        if fecha_fin is None or fecha_fin.replace(microsecond=0) < now:
+        id_equipo, nombre, descripcion, tipo, tarifa, max_fecha_fin = row
+        if max_fecha_fin is None or max_fecha_fin.replace(microsecond=0) < now:
             dispositivos_disponibles.append(f"{id_equipo},{nombre},{descripcion},{tipo},{tarifa}")
         else:
-            dispositivos_arrendados.append(f"{id_equipo},{nombre},{descripcion},{tipo},{tarifa}")
+            dispositivos_arrendados.append(f"{id_equipo},{nombre},{descripcion},{tipo},{tarifa},{max_fecha_fin}")
     
     response = "EQUIPOK,Disponibles:" + "|".join(dispositivos_disponibles) + ";Arrendados:" + "|".join(dispositivos_arrendados)
+    
+    cursor.fetchall()  # Leer todos los resultados no leídos
+    cursor.close()
+    db_connection.close()
     return response
 
 def añadir_equipo(payload):
+    db_connection = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root_password",
+        database="CyberCafeManager"
+    )
+    cursor = db_connection.cursor()
+    
     nombre, descripcion, tipo, tarifa = payload.split(',')
     query = f"INSERT INTO Equipos (nombre, descripcion, tipo, tarifa) VALUES ('{nombre}', '{descripcion}', '{tipo}', {tarifa})"
     cursor.execute(query)
     db_connection.commit()
-    return f"EQUIPOK,{cursor.lastrowid}"
+    response = f"EQUIPOK,{cursor.lastrowid}"
+    
+    cursor.fetchall()  # Leer todos los resultados no leídos
+    cursor.close()
+    db_connection.close()
+    return response
 
 def eliminar_equipo(id_equipo):
+    db_connection = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root_password",
+        database="CyberCafeManager"
+    )
+    cursor = db_connection.cursor()
+    
     query = f"DELETE FROM Equipos WHERE id={id_equipo}"
     cursor.execute(query)
     db_connection.commit()
+    
+    cursor.fetchall()  # Leer todos los resultados no leídos
+    cursor.close()
+    db_connection.close()
     return "EQUIPOK, Equipo eliminado"
 
 def modificar_equipo(payload):
+    db_connection = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root_password",
+        database="CyberCafeManager"
+    )
+    cursor = db_connection.cursor()
+    
     id_equipo, nombre, descripcion, tipo, tarifa = payload.split(',')
     query = f"UPDATE Equipos SET nombre='{nombre}', descripcion='{descripcion}', tipo='{tipo}', tarifa={tarifa} WHERE id={id_equipo}"
     cursor.execute(query)
     db_connection.commit()
+    
+    cursor.fetchall()  # Leer todos los resultados no leídos
+    cursor.close()
+    db_connection.close()
     return "EQUIPOK, Equipo modificado"
 
 try:
@@ -129,5 +182,3 @@ try:
 finally:
     print('closing socket')
     sock.close()
-    cursor.close()
-    db_connection.close()

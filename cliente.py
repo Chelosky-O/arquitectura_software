@@ -5,6 +5,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, PatternFill, Font
 import os
 from datetime import datetime
+
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -32,74 +33,88 @@ def send_message(service, action, data):
         sock.close()
     return response.decode()
 
+def validar_rut(rut):
+    if rut.isdigit() and len(rut) <= 9:
+        return True
+    return False
+
+def validar_id(id):
+    if id.isdigit():
+        return True
+    return False
+
 # Funciones para la gestión de equipos
 def obtener_info_equipo(id_equipo):
+    if not validar_id(id_equipo):
+        print("Error: El ID debe ser un número entero.")
+        return
     response = send_message("EQUIP", "CODIU", str(id_equipo))
     response_parts = response.split(',')
-    
-    id = response_parts[1]
-    nombre = response_parts[2]
-    descripcion = response_parts[3]
-    tipo = response_parts[4]
-    tarifa = response_parts[5]
-    arrendado = response_parts[6]
+    if response_parts[0] == "EQUIPOKOK":
+        id = response_parts[1]
+        nombre = response_parts[2]
+        descripcion = response_parts[3]
+        tipo = response_parts[4]
+        tarifa = response_parts[5]
+        arrendado = response_parts[6]
 
-    if arrendado == "No arrendado":
         print(f"ID: {id}")
         print(f"Nombre: {nombre}")
         print(f"Descripción: {descripcion}")
         print(f"Tipo: {tipo}")
         print(f"Tarifa: {tarifa}")
+        if arrendado != "No arrendado":
+            print(f"Arrendado: {arrendado}")
     else:
-        print(f"ID: {id}")
-        print(f"Nombre: {nombre}")
-        print(f"Descripción: {descripcion}")
-        print(f"Tipo: {tipo}")
-        print(f"Tarifa: {tarifa}")
-        print(f"Arrendado: {arrendado}")
+        print("Error al obtener la información del equipo.")
 
 def obtener_info_todos_equipos():
     response = send_message("EQUIP", "CODIT", "")
-    response = response[10:]
-    
-    # Separar respuesta en disponibles y arrendados
-    partes = response.split(';')
-    disponibles = partes[0].replace("Disponibles:", "").split('|')
-    arrendados = partes[1].replace("Arrendados:", "").split('|')
+    if "EQUIPOK" in response:
+        response = response[10:]
+        partes = response.split(';')
+        if len(partes) != 2:
+            print("Formato de respuesta inválido.")
+            return
 
-    # Mostrar dispositivos disponibles
-    print("Dispositivos Disponibles:")
-    for equipo in disponibles:
-        if equipo:
-            response_parts = equipo.split(',')
-            id = response_parts[0]
-            nombre = response_parts[1]
-            descripcion = response_parts[2]
-            tipo = response_parts[3]
-            tarifa = response_parts[4]
-            print(f"ID: {id}")
-            print(f"Nombre: {nombre}")
-            print(f"Descripción: {descripcion}")
-            print(f"Tipo: {tipo}")
-            print(f"Tarifa: {tarifa}")
-            print("-----------------")
+        disponibles = partes[0].replace("Disponibles:", "").split('|')
+        arrendados = partes[1].replace("Arrendados:", "").split('|')
 
-    # Mostrar dispositivos arrendados
-    print("Dispositivos Arrendados:")
-    for equipo in arrendados:
-        if equipo:
-            response_parts = equipo.split(',')
-            id = response_parts[0]
-            nombre = response_parts[1]
-            descripcion = response_parts[2]
-            tipo = response_parts[3]
-            tarifa = response_parts[4]
-            print(f"ID: {id}")
-            print(f"Nombre: {nombre}")
-            print(f"Descripción: {descripcion}")
-            print(f"Tipo: {tipo}")
-            print(f"Tarifa: {tarifa}")
-            print("-----------------")
+        print("Dispositivos Disponibles:")
+        for equipo in disponibles:
+            if equipo:
+                response_parts = equipo.split(',')
+                if len(response_parts) >= 5:
+                    id = response_parts[0]
+                    nombre = response_parts[1]
+                    descripcion = response_parts[2]
+                    tipo = response_parts[3]
+                    tarifa = response_parts[4]
+                    print(f"ID: {id}")
+                    print(f"Nombre: {nombre}")
+                    print(f"Descripción: {descripcion}")
+                    print(f"Tipo: {tipo}")
+                    print(f"Tarifa: {tarifa}")
+                    print("-----------------")
+
+        print("Dispositivos Arrendados:")
+        for equipo in arrendados:
+            if equipo:
+                response_parts = equipo.split(',')
+                if len(response_parts) >= 5:
+                    id = response_parts[0]
+                    nombre = response_parts[1]
+                    descripcion = response_parts[2]
+                    tipo = response_parts[3]
+                    tarifa = response_parts[4]
+                    print(f"ID: {id}")
+                    print(f"Nombre: {nombre}")
+                    print(f"Descripción: {descripcion}")
+                    print(f"Tipo: {tipo}")
+                    print(f"Tarifa: {tarifa}")
+                    print("-----------------")
+    else:
+        print("Error al obtener la información de los equipos.")
 
 def añadir_equipo(nombre, descripcion, tipo, tarifa):
     data = f"{nombre},{descripcion},{tipo},{tarifa}"
@@ -107,14 +122,20 @@ def añadir_equipo(nombre, descripcion, tipo, tarifa):
     print(f"Equipo: {nombre} ha sido añadido")
 
 def eliminar_equipo(id_equipo):
+    if not validar_id(id_equipo):
+        print("Error: El ID debe ser un número entero.")
+        return
     response = send_message("EQUIP", "CODEE", str(id_equipo))
     print(f"Equipo de ID: {id_equipo} ha sido eliminado")
 
 def modificar_equipo(id_equipo, nombre, descripcion, tipo, tarifa):
+    if not validar_id(id_equipo):
+        print("Error: El ID debe ser un número entero.")
+        return
     data = f"{id_equipo},{nombre},{descripcion},{tipo},{tarifa}"
     response = send_message("EQUIP", "CODME", data)
     print(f"Datos del equipo de ID: {id_equipo} han sido modificados")
-    
+
 def obtener_dispositivos_disponibles():
     response = send_message("EQUIP", "DISPO", "disponibles")
     dispositivos = response.split(',')
@@ -127,9 +148,10 @@ def obtener_dispositivos_no_disponibles():
     for dispositivo in dispositivos:
         print(dispositivo)    
 
+# Funciones para la gestión de usuarios
 def añadir_usuario(nombre, rut, email):
-    if len(rut) > 9:
-        print("Error: El RUT no puede tener más de 9 dígitos.")
+    if not validar_rut(rut):
+        print("Error: El RUT debe ser un número entero menor a 9 dígitos.")
         return
     
     data = f"{nombre},{rut},{email}"
@@ -137,8 +159,8 @@ def añadir_usuario(nombre, rut, email):
     print(f"Usuario de RUT: {rut} ha sido añadido")
 
 def eliminar_usuario(rut):
-    if len(rut) > 9:
-        print("Error: El RUT no puede tener más de 9 dígitos.")
+    if not validar_rut(rut):
+        print("Error: El RUT debe ser un número entero menor a 9 dígitos.")
         return
     
     response = send_message("USUAR", "CODEU", str(rut))
@@ -146,8 +168,8 @@ def eliminar_usuario(rut):
 
 def modificar_usuario():
     rut = input("Ingrese el RUT del usuario a modificar: ")
-    if len(rut) > 9:
-        print("Error: El RUT no puede tener más de 9 dígitos.")
+    if not validar_rut(rut):
+        print("Error: El RUT debe ser un número entero menor a 9 dígitos.")
         return
     
     nombre = input("Ingrese el nuevo nombre del usuario: ")
@@ -157,46 +179,43 @@ def modificar_usuario():
     print(f"Datos del usuario de RUT: {rut} han sido modificados")
 
 def obtener_info_usuario(rut):
-    if len(rut) > 9:
-        print("Error: El RUT no puede tener más de 9 dígitos.")
+    if not validar_rut(rut):
+        print("Error: El RUT debe ser un número entero menor a 9 dígitos.")
         return
     
     response = send_message("USUAR", "CODIU", str(rut))
-    
     response_parts = response.split(',')
     
-    # Extract the required information
-    nombre = response_parts[1]
-    rut = response_parts[2]
-    email = response_parts[3]
-    
-    # Print the formatted information
-    print(f"Nombre: {nombre}")
-    print(f"RUT: {rut}")
-    print(f"Email: {email}")
-
-def obtener_info_todos_usuarios():
-    response = send_message("USUAR", "CODIT", "")
-    #Split the response string by '|'
-    response = response[10:]
-    usuarios = response.split('|')
-    
-    # Iterate through each user and print the formatted information
-    for usuario in usuarios:
-        #print(usuario)
-        response_parts = usuario.split(',')
-
-        # Extract the required information
-        nombre = response_parts[0]
-        rut = response_parts[1]
-        email = response_parts[2]
-        
-        # Print the formatted information
+    if response_parts[0] == "USUAROKOK":
+        nombre = response_parts[1]
+        rut = response_parts[2]
+        email = response_parts[3]
         print(f"Nombre: {nombre}")
         print(f"RUT: {rut}")
         print(f"Email: {email}")
-        print("-----------------")
+    else:
+        print("Error al obtener la información del usuario.")
 
+def obtener_info_todos_usuarios():
+    response = send_message("USUAR", "CODIT", "")
+    if "USUAROK" in response:
+        response = response[10:]
+        usuarios = response.split('|')
+        if not usuarios or usuarios == ['']:
+            print("No hay usuarios en la base de datos.")
+            return
+        for usuario in usuarios:
+            response_parts = usuario.split(',')
+            if len(response_parts) >= 3:
+                nombre = response_parts[0]
+                rut = response_parts[1]
+                email = response_parts[2]
+                print(f"Nombre: {nombre}")
+                print(f"RUT: {rut}")
+                print(f"Email: {email}")
+                print("-----------------")
+    else:
+        print("Error al obtener la información de los usuarios.")
 
 # Funciones para la gestión de alimentos
 def añadir_alimento(nombre, precio, stock):
@@ -205,75 +224,91 @@ def añadir_alimento(nombre, precio, stock):
     print(f"Alimento: {nombre} ha sido añadido")
 
 def eliminar_alimento(id_alimento):
+    if not validar_id(id_alimento):
+        print("Error: El ID debe ser un número entero.")
+        return
     response = send_message("ALIME", "CODEA", str(id_alimento))
     print(f"Alimento de ID: {id_alimento} ha sido eliminado")
 
 def modificar_alimento(id_alimento, nombre, precio, stock):
+    if not validar_id(id_alimento):
+        print("Error: El ID debe ser un número entero.")
+        return
     data = f"{id_alimento},{nombre},{precio},{stock}"
     response = send_message("ALIME", "CODMA", data)
     print(f"Los datos del alimento de ID: {id_alimento} han sido modificados")
 
 def obtener_info_alimento(id_alimento):
+    if not validar_id(id_alimento):
+        print("Error: El ID debe ser un número entero.")
+        return
     response = send_message("ALIME", "CODIA", str(id_alimento))
     response_parts = response.split(',')
     
-    # Extract the required information
-    id = response_parts[1]
-    nombre = response_parts[2]
-    precio = response_parts[3]
-    stock = response_parts[4]
-    
-    # Print the formatted information
-    print(f"ID: {id}")
-    print(f"Nombre: {nombre}")
-    print(f"Precio: {precio}")
-    print(f"Stock: {stock}")
-    #print(f"Respuesta: {response}")
-
-def obtener_info_todos_alimentos():
-    response = send_message("ALIME", "CODIT", "")
-    response = response[10:] 
-    #Split the response string by '|'
-    alimentos = response.split('|')
-    
-    # Iterate through each user and print the formatted information
-    for alimento in alimentos:
-        response_parts = alimento.split(',')
-        
-        id = response_parts[0]
-        nombre = response_parts[1]  
-        precio = response_parts[2]
-        stock = response_parts[3]
-        
-        # Print the formatted information
+    if response_parts[0] == "ALIMEOKOK":
+        id = response_parts[1]
+        nombre = response_parts[2]
+        precio = response_parts[3]
+        stock = response_parts[4]
         print(f"ID: {id}")
         print(f"Nombre: {nombre}")
         print(f"Precio: {precio}")
         print(f"Stock: {stock}")
-        print("-----------------")
-    #print(f"Respuesta: {response}")
+    else:
+        print("Error al obtener la información del alimento.")
 
+def obtener_info_todos_alimentos():
+    response = send_message("ALIME", "CODIT", "")
+    if "ALIMEOK" in response:
+        response = response[10:]
+        alimentos = response.split('|')
+        if not alimentos or alimentos == ['']:
+            print("No hay alimentos en la base de datos.")
+            return
+        for alimento in alimentos:
+            response_parts = alimento.split(',')
+            if len(response_parts) >= 4:
+                id = response_parts[0]
+                nombre = response_parts[1]
+                precio = response_parts[2]
+                stock = response_parts[3]
+                print(f"ID: {id}")
+                print(f"Nombre: {nombre}")
+                print(f"Precio: {precio}")
+                print(f"Stock: {stock}")
+                print("-----------------")
+    else:
+        print("Error al obtener la información de los alimentos.")
+
+# Funciones para la gestión de arriendo de equipos
 def arrendar_equipo(rut_usuario, id_equipo, tiempo_arriendo):
+    if not validar_rut(rut_usuario):
+        print("Error: El RUT debe ser un número entero menor a 9 dígitos.")
+        return
+    if not validar_id(id_equipo):
+        print("Error: El ID del equipo debe ser un número entero.")
+        return
+    
     data = f"{rut_usuario},{id_equipo},{tiempo_arriendo}"
     response = send_message("ARRIE", "CODAE", data)
-    
     response_parts = response.split(',')
     if response_parts[0] == "ARRIEOKOK":
         fecha = response_parts[1]
         monto = response_parts[2]
         fecha_fin = response_parts[3]
-        print(f"¡Arriendo exitoso! Usuario: {rut_usuario} - Equipo: {id_equipo})")
+        print(f"¡Arriendo exitoso! Usuario: {rut_usuario} - Equipo: {id_equipo}")
         print(f"Fecha inicio: {fecha} - Fecha final: {fecha_fin} - Monto: {monto}")
     else:
         print("Error: ", response_parts[1])
 
-
-
 # Funciones para la venta de alimentos
 def vender_alimento(rut_usuario, nombre_alimento, cantidad):
+    if not validar_rut(rut_usuario):
+        print("Error: El RUT debe ser un número entero menor a 9 dígitos.")
+        return
+    
     data = f"{rut_usuario},{nombre_alimento},{cantidad}"
     response = send_message("VENAL", "CODAC", data)
-    
     response_parts = response.split(',')
     if response_parts[0] == "VENALOKOK":
         total = response_parts[1]
@@ -285,17 +320,14 @@ def vender_alimento(rut_usuario, nombre_alimento, cantidad):
     else:
         print("Error: ", response_parts[1])
 
-    
 # Funciones para el registro de ganancias
 def obtener_ganancias_arriendo(fecha_inicio, fecha_fin):
     data = f"{fecha_inicio},{fecha_fin}"
     response = send_message("REGAN", "CODAE", data)
-    #print(response)
-    response_parts = response.split(',',1)
+    response_parts = response.split(',', 1)
     if response_parts[0] == "REGANOKOK":
         ganancias = response_parts[1].split('|')
         for ganancia in ganancias:
-            #print(f"Procesando: {ganancia}")  # Agrega esta línea para depuración
             if ',' in ganancia:
                 fecha, monto = ganancia.split(',')
                 print(f"Fecha: {fecha}, Monto: {monto}")
@@ -307,11 +339,10 @@ def obtener_ganancias_arriendo(fecha_inicio, fecha_fin):
 def obtener_ganancias_ventas(fecha_inicio, fecha_fin):
     data = f"{fecha_inicio},{fecha_fin}"
     response = send_message("REGAN", "CODVA", data)
-    response_parts = response.split(',',1)
+    response_parts = response.split(',', 1)
     if response_parts[0] == "REGANOKOK":
         ganancias = response_parts[1].split('|')
         for ganancia in ganancias:
-            #print(f"Procesando: {ganancia}")  # Agrega esta línea para depuración
             if ',' in ganancia:
                 fecha, monto = ganancia.split(',')
                 print(f"Fecha: {fecha}, Monto: {monto}")
@@ -320,8 +351,6 @@ def obtener_ganancias_ventas(fecha_inicio, fecha_fin):
     else:
         print("Error: ", response_parts[1])
 
-    
-    
 # Directorio base donde se guardarán los informes
 base_directory = "informes"
 
@@ -332,44 +361,35 @@ def generar_excel_ganancia_equipos():
     if response_parts[0] == "INFOROKOK":
         montos_por_tipo = response_parts[1].split('|')
         
-        # Obtener la fecha actual para crear la carpeta
         fecha_actual = datetime.now().strftime("%Y-%m-%d")
-        
-        # Crear la ruta completa de la carpeta y el archivo
         folder_path = os.path.join(base_directory, fecha_actual)
         os.makedirs(folder_path, exist_ok=True)
         
         file_name = f"ganancia_equipos.xlsx"
         file_path = os.path.join(folder_path, file_name)
         
-        # Crear el archivo Excel y escribir los datos
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Ganancia Equipos"
         
-        # Formato para las celdas
         header_fill = PatternFill(start_color="0072C6", end_color="0072C6", fill_type="solid")
         header_font = Font(color="FFFFFF", bold=True)
         cell_alignment = Alignment(horizontal="center", vertical="center")
         
-        # Agregar datos al Excel
         ws.append(["Tipo de Equipo", "Monto"])
         for tipo_monto in montos_por_tipo:
             subpartes = tipo_monto.split(',')
-            ws.append([subpartes[0], float(subpartes[1])])  # Convertir monto a float si es necesario
+            ws.append([subpartes[0], float(subpartes[1])])  
             
-        # Establecer estilo para las celdas
         for row in ws.iter_rows(min_row=1, max_row=1):
             for cell in row:
                 cell.fill = header_fill
                 cell.font = header_font
                 cell.alignment = cell_alignment
         
-        # Ajustar ancho de columnas
         ws.column_dimensions['A'].width = 20
         ws.column_dimensions['B'].width = 15
         
-        # Guardar el archivo Excel
         wb.save(file_path)
         print(f"Informe de ganancia por tipos de equipos generado: {file_path}")
     else:
@@ -381,46 +401,37 @@ def generar_excel_uso_equipos():
     if response_parts[0] == "INFOROKOK":
         uso_equipos = response_parts[1].split('|')
         
-        # Obtener la fecha actual para crear la carpeta
         fecha_actual = datetime.now().strftime("%Y-%m-%d")
-        
-        # Crear la ruta completa de la carpeta y el archivo
         folder_path = os.path.join(base_directory, fecha_actual)
         os.makedirs(folder_path, exist_ok=True)
         
         file_name = f"uso_equipos.xlsx"
         file_path = os.path.join(folder_path, file_name)
         
-        # Crear el archivo Excel y escribir los datos
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Uso Equipos"
         
-        # Formato para las celdas
         header_fill = PatternFill(start_color="92D050", end_color="92D050", fill_type="solid")
         header_font = Font(color="FFFFFF", bold=True)
         cell_alignment = Alignment(horizontal="center", vertical="center")
         
-        # Agregar datos al Excel
         ws.append(["ID Equipo", "Nombre", "Tiempo de Uso", "Monto Total"])
         for equipo in uso_equipos:
             id_equipo, nombre, tiempo, monto = equipo.split(',')
-            ws.append([id_equipo, nombre, float(tiempo), float(monto)])  # Convertir tiempo y monto a float si es necesario
+            ws.append([id_equipo, nombre, float(tiempo), float(monto)])  
         
-        # Establecer estilo para las celdas
         for row in ws.iter_rows(min_row=1, max_row=1):
             for cell in row:
                 cell.fill = header_fill
                 cell.font = header_font
                 cell.alignment = cell_alignment
         
-        # Ajustar ancho de columnas
         ws.column_dimensions['A'].width = 12
         ws.column_dimensions['B'].width = 20
         ws.column_dimensions['C'].width = 15
         ws.column_dimensions['D'].width = 15
         
-        # Guardar el archivo Excel
         wb.save(file_path)
         print(f"Informe de uso de equipos generado: {file_path}")
     else:
@@ -432,66 +443,72 @@ def generar_excel_ventas_alimentos():
     if response_parts[0] == "INFOROKOK":
         ventas_alimentos = response_parts[1].split('|')
         
-        # Obtener la fecha actual para crear la carpeta
         fecha_actual = datetime.now().strftime("%Y-%m-%d")
-        
-        # Crear la ruta completa de la carpeta y el archivo
         folder_path = os.path.join(base_directory, fecha_actual)
         os.makedirs(folder_path, exist_ok=True)
         
         file_name = f"ventas_alimentos.xlsx"
         file_path = os.path.join(folder_path, file_name)
         
-        # Crear el archivo Excel y escribir los datos
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Ventas Alimentos"
         
-        # Formato para las celdas
         header_fill = PatternFill(start_color="FFC000", end_color="FFC000", fill_type="solid")
         header_font = Font(color="FFFFFF", bold=True)
         cell_alignment = Alignment(horizontal="center", vertical="center")
         
-        # Agregar datos al Excel
         ws.append(["ID Alimento", "Nombre", "Monto"])
         for alimento in ventas_alimentos:
             subpartes = alimento.split(',')
-            ws.append([subpartes[0], subpartes[1], float(subpartes[2])])  # Convertir monto a float si es necesario
+            ws.append([subpartes[0], subpartes[1], float(subpartes[2])])  
         
-        # Establecer estilo para las celdas
         for row in ws.iter_rows(min_row=1, max_row=1):
             for cell in row:
                 cell.fill = header_fill
                 cell.font = header_font
                 cell.alignment = cell_alignment
         
-        # Ajustar ancho de columnas
         ws.column_dimensions['A'].width = 12
         ws.column_dimensions['B'].width = 20
         ws.column_dimensions['C'].width = 15
         
-        # Guardar el archivo Excel
         wb.save(file_path)
         print(f"Informe de ventas de alimentos generado: {file_path}")
     else:
         print("Error al generar el informe: ", response_parts[1])
-        
+
 # Funciones para la gestión de juegos
 def añadir_juego(nombre, descripcion, id_equipo):
+    if not validar_id(id_equipo):
+        print("Error: El ID del equipo debe ser un número entero.")
+        return
     data = f"{nombre},{descripcion},{id_equipo}"
     response = send_message("JUEGO", "CODAJ", data)
     print(f"Juego: {nombre} ha sido añadido con ID: {response.split(',')[1]}")
 
 def eliminar_juego(id_juego):
+    if not validar_id(id_juego):
+        print("Error: El ID del juego debe ser un número entero.")
+        return
     response = send_message("JUEGO", "CODEJ", str(id_juego))
     print(f"Juego de ID: {id_juego} ha sido eliminado")
 
 def modificar_juego(id_juego, nombre, descripcion, id_equipo):
+    if not validar_id(id_juego):
+        print("Error: El ID del juego debe ser un número entero.")
+        return
+    if not validar_id(id_equipo):
+        print("Error: El ID del equipo debe ser un número entero.")
+        return
     data = f"{id_juego},{nombre},{descripcion},{id_equipo}"
     response = send_message("JUEGO", "CODMJ", data)
     print(f"Datos del juego de ID: {id_juego} han sido modificados")
 
 def obtener_info_juego(id_juego):
+    if not validar_id(id_juego):
+        print("Error: El ID del juego debe ser un número entero.")
+        return
     response = send_message("JUEGO", "CODIU", str(id_juego))
     response_parts = response.split(',')
     if response_parts[0] == "JUEGOOKOK":
@@ -508,21 +525,27 @@ def obtener_info_juego(id_juego):
 
 def obtener_info_todos_juegos():
     response = send_message("JUEGO", "CODIT", "")
-    response = response[10:]  # Assuming we need to strip the first 10 characters
-    juegos = response.split('|')
-    for juego in juegos:
-        response_parts = juego.split(',')
-        id_juego = response_parts[0]
-        nombre = response_parts[1]
-        descripcion = response_parts[2]
-        id_equipo = response_parts[3]
-        print(f"ID: {id_juego}")
-        print(f"Nombre: {nombre}")
-        print(f"Descripción: {descripcion}")
-        print(f"ID Equipo: {id_equipo}")
-        print("-----------------")
+    if "JUEGOOK" in response:
+        response = response[10:]
+        juegos = response.split('|')
+        if not juegos or juegos == ['']:
+            print("No hay juegos en la base de datos.")
+            return
+        for juego in juegos:
+            response_parts = juego.split(',')
+            if len(response_parts) >= 4:
+                id_juego = response_parts[0]
+                nombre = response_parts[1]
+                descripcion = response_parts[2]
+                id_equipo = response_parts[3]
+                print(f"ID: {id_juego}")
+                print(f"Nombre: {nombre}")
+                print(f"Descripción: {descripcion}")
+                print(f"ID Equipo: {id_equipo}")
+                print("-----------------")
+    else:
+        print("Error al obtener la información de los juegos.")
 
-# Ejemplos de uso
 try:
     while True:
         print("Menú de opciones:")
@@ -587,37 +610,34 @@ try:
                 if usuar_option == "1":
                     nombre = input("Ingrese nombre del usuario: ")
                     rut = input("Ingrese RUT del usuario: ")
-                    if len(rut) > 9:
-                        print("Error: El RUT no puede tener más de 9 dígitos, intentelo nuevamente")
-                        continue
                     email = input("Ingrese email del usuario: ")
                     añadir_usuario(nombre, rut, email)
+                    break
                 
                 elif usuar_option == "2":
                     rut = input("Ingrese RUT del usuario: ")
-                    if len(rut) > 9:
-                        print("Error: El RUT no puede tener más de 9 dígitos, intentelo nuevamente")
-                        continue
                     eliminar_usuario(rut)
+                    break
                 
                 elif usuar_option == "3":
                     modificar_usuario()
+                    break
                 
                 elif usuar_option == "4":
                     rut = input("Ingrese RUT del usuario: ")
-                    if len(rut) > 9:
-                        print("Error: El RUT no puede tener más de 9 dígitos, intentelo nuevamente")
-                        continue
                     obtener_info_usuario(rut)
+                    break
                 
                 elif usuar_option == "5":
                     obtener_info_todos_usuarios()
+                    break
                 
                 elif usuar_option == "6":
-                    break  # Salir del bucle y volver al menú principal
+                    break
                 
                 else:
                     print("Opción no válida")
+                    break
 
         
         elif option == "3":

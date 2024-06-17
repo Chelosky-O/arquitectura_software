@@ -3,16 +3,6 @@ import sys
 import mysql.connector
 from datetime import datetime
 
-# Conectar a la base de datos
-db_connection = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root_password",
-    database="CyberCafeManager"
-)
-
-cursor = db_connection.cursor()
-
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -38,42 +28,102 @@ def handle_request(data):
         return "JUEGONK, Acción inválida"
 
 def añadir_juego(payload):
-    nombre, descripcion, id_equipo = payload.split(',')
-    query = f"INSERT INTO Juegos (nombre, descripcion, id_equipo) VALUES ('{nombre}', '{descripcion}', {id_equipo})"
-    cursor.execute(query)
-    db_connection.commit()
-    return f"JUEGOOK,{cursor.lastrowid}"
+    try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
+        nombre, descripcion, id_equipo = payload.split(',')
+        query = f"INSERT INTO Juegos (nombre, descripcion, id_equipo) VALUES ('{nombre}', '{descripcion}', {id_equipo})"
+        cursor.execute(query)
+        db_connection.commit()
+        return f"JUEGOOK,{cursor.lastrowid}"
+    finally:
+        cursor.close()
+        db_connection.close()
 
 def eliminar_juego(id_juego):
-    query = f"DELETE FROM Juegos WHERE id={id_juego}"
-    cursor.execute(query)
-    db_connection.commit()
-    return "JUEGOOK, Juego eliminado"
+    try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
+        query = f"DELETE FROM Juegos WHERE id={id_juego}"
+        cursor.execute(query)
+        db_connection.commit()
+        return "JUEGOOK, Juego eliminado"
+    finally:
+        cursor.close()
+        db_connection.close()
 
 def modificar_juego(payload):
-    id_juego, nombre, descripcion, id_equipo = payload.split(',')
-    query = f"UPDATE Juegos SET nombre='{nombre}', descripcion='{descripcion}', id_equipo={id_equipo} WHERE id={id_juego}"
-    cursor.execute(query)
-    db_connection.commit()
-    return "JUEGOOK, Juego modificado"
+    try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
+        id_juego, nombre, descripcion, id_equipo = payload.split(',')
+        query = f"UPDATE Juegos SET nombre='{nombre}', descripcion='{descripcion}', id_equipo={id_equipo} WHERE id={id_juego}"
+        cursor.execute(query)
+        db_connection.commit()
+        return "JUEGOOK, Juego modificado"
+    finally:
+        cursor.close()
+        db_connection.close()
 
 def obtener_info_juego(id_juego):
-    query = f"SELECT * FROM Juegos WHERE id={id_juego}"
-    cursor.execute(query)
-    result = cursor.fetchone()
-    if result:
-        id_juego, nombre, descripcion, id_equipo = result
-        response = f"JUEGOOK,{id_juego},{nombre},{descripcion},{id_equipo}"
-    else:
-        response = "JUEGONK, Juego no encontrado"
-    return response
+    try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
+        query = f"SELECT * FROM Juegos WHERE id={id_juego}"
+        cursor.execute(query)
+        result = cursor.fetchone()
+        if result:
+            id_juego, nombre, descripcion, id_equipo = result
+            response = f"JUEGOOK,{id_juego},{nombre},{descripcion},{id_equipo}"
+        else:
+            response = "JUEGONK, Juego no encontrado"
+        return response
+    finally:
+        cursor.close()
+        db_connection.close()
 
 def obtener_info_todos_juegos():
-    query = "SELECT * FROM Juegos"
-    cursor.execute(query)
-    results = cursor.fetchall()
-    response = "JUEGOOK," + "|".join([f"{row[0]},{row[1]},{row[2]},{row[3]}" for row in results])
-    return response
+    try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
+        query = "SELECT * FROM Juegos"
+        cursor.execute(query)
+        results = cursor.fetchall()
+        response = "JUEGOOK," + "|".join([f"{row[0]},{row[1]},{row[2]},{row[3]}" for row in results])
+        return response
+    finally:
+        cursor.close()
+        db_connection.close()
 
 try:
     message = b'00010sinitJUEGO'
@@ -103,5 +153,3 @@ try:
 finally:
     print('closing socket')
     sock.close()
-    cursor.close()
-    db_connection.close()
