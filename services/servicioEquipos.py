@@ -2,6 +2,7 @@ import socket
 import sys
 import mysql.connector
 from datetime import datetime
+from mysql.connector import Error
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -98,20 +99,32 @@ def obtener_info_todos_equipos():
     return response
 
 def añadir_equipo(payload):
-    db_connection = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="root_password",
-        database="CyberCafeManager"
-    )
-    cursor = db_connection.cursor()
-    
-    nombre, descripcion, tipo, tarifa = payload.split(',')
-    query = f"INSERT INTO Equipos (nombre, descripcion, tipo, tarifa) VALUES ('{nombre}', '{descripcion}', '{tipo}', {tarifa})"
-    cursor.execute(query)
-    db_connection.commit()
-    response = f"EQUIPOK,{cursor.lastrowid}"
-    
+    try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
+        # Suponiendo que el payload está correctamente formateado
+        nombre, descripcion, tipo, tarifa = payload.split(',')
+        
+        # Preparar la consulta para evitar inyecciones SQL
+        query = "INSERT INTO Equipos (nombre, descripcion, tipo, tarifa) VALUES (%s, %s, %s, %s)"
+        cursor.execute(query, (nombre, descripcion, tipo, tarifa))
+        
+        # Confirmar la transacción
+        db_connection.commit()
+        
+        # Preparar la respuesta
+        response = f"EQUIPOK,{cursor.lastrowid}"
+        
+    except Error as e:
+        # Manejo de errores
+        response = f"ERROR,{str(e)}"
+
     cursor.fetchall()  # Leer todos los resultados no leídos
     cursor.close()
     db_connection.close()
@@ -129,6 +142,10 @@ def eliminar_equipo(id_equipo):
     query = f"DELETE FROM Equipos WHERE id={id_equipo}"
     cursor.execute(query)
     db_connection.commit()
+
+    # Comprobar si se eliminó algún registro
+    if cursor.rowcount == 0:
+        return "ERROR, No se encontró el equipo con el ID especificado"
     
     cursor.fetchall()  # Leer todos los resultados no leídos
     cursor.close()
@@ -136,23 +153,30 @@ def eliminar_equipo(id_equipo):
     return "EQUIPOK, Equipo eliminado"
 
 def modificar_equipo(payload):
-    db_connection = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="root_password",
-        database="CyberCafeManager"
-    )
-    cursor = db_connection.cursor()
+    try:
+        db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root_password",
+            database="CyberCafeManager"
+        )
+        cursor = db_connection.cursor()
+        
+        id_equipo, nombre, descripcion, tipo, tarifa = payload.split(',')
+        query = f"UPDATE Equipos SET nombre='{nombre}', descripcion='{descripcion}', tipo='{tipo}', tarifa={tarifa} WHERE id={id_equipo}"
+        cursor.execute(query)
+        db_connection.commit()
+
+        response = f"EQUIPOK, Equipo modificado"
     
-    id_equipo, nombre, descripcion, tipo, tarifa = payload.split(',')
-    query = f"UPDATE Equipos SET nombre='{nombre}', descripcion='{descripcion}', tipo='{tipo}', tarifa={tarifa} WHERE id={id_equipo}"
-    cursor.execute(query)
-    db_connection.commit()
-    
+    except Error as e:
+        # Manejo de errores
+        response = f"ERROR,{str(e)}"
+        
     cursor.fetchall()  # Leer todos los resultados no leídos
     cursor.close()
     db_connection.close()
-    return "EQUIPOK, Equipo modificado"
+    return response
 
 try:
     message = b'00010sinitEQUIP'

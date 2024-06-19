@@ -119,14 +119,20 @@ def obtener_info_todos_equipos():
 def añadir_equipo(nombre, descripcion, tipo, tarifa):
     data = f"{nombre},{descripcion},{tipo},{tarifa}"
     response = send_message("EQUIP", "CODAE", data)
-    print(f"Equipo: {nombre} ha sido añadido")
+    if response == "EQUIPOKNK, Acción inválida":
+        print("Error al añadir equipo")
+    else:
+        print(f"Equipo: {nombre} ha sido añadido")
 
 def eliminar_equipo(id_equipo):
     if not validar_id(id_equipo):
         print("Error: El ID debe ser un número entero.")
         return
     response = send_message("EQUIP", "CODEE", str(id_equipo))
-    print(f"Equipo de ID: {id_equipo} ha sido eliminado")
+    if response == "EQUIPOKNK, Acción inválida":
+        print("Error al eliminar equipo")
+    else:
+        print(f"Equipo de ID: {id_equipo} ha sido eliminado")
 
 def modificar_equipo(id_equipo, nombre, descripcion, tipo, tarifa):
     if not validar_id(id_equipo):
@@ -134,7 +140,10 @@ def modificar_equipo(id_equipo, nombre, descripcion, tipo, tarifa):
         return
     data = f"{id_equipo},{nombre},{descripcion},{tipo},{tarifa}"
     response = send_message("EQUIP", "CODME", data)
-    print(f"Datos del equipo de ID: {id_equipo} han sido modificados")
+    if response == "EQUIPOKNK, Acción inválida":
+        print("Error al modificar equipo")
+    else:
+        print(f"Datos del equipo de ID: {id_equipo} han sido modificados")
 
 def obtener_dispositivos_disponibles():
     response = send_message("EQUIP", "DISPO", "disponibles")
@@ -156,15 +165,22 @@ def añadir_usuario(nombre, rut, email):
     
     data = f"{nombre},{rut},{email}"
     response = send_message("USUAR", "CODAU", data)
-    print(f"Usuario de RUT: {rut} ha sido añadido")
+    if response == "USUAROKNK, Acción inválida":
+        print("Error al añadir usuario")
+    else:
+        print(f"Usuario de RUT: {rut} ha sido añadido")
 
 def eliminar_usuario(rut):
     if not validar_rut(rut):
         print("Error: El RUT debe ser un número entero menor a 9 dígitos.")
         return
-    
+
     response = send_message("USUAR", "CODEU", str(rut))
-    print(f"Usuario de RUT: {rut} ha sido eliminado")
+    if response == "USUAROKNK, Acción inválida":
+        print("Error al eliminar usuario")
+    else:
+        print(f"Usuario de RUT: {rut} ha sido eliminado")
+    
 
 def modificar_usuario():
     rut = input("Ingrese el RUT del usuario a modificar: ")
@@ -176,7 +192,11 @@ def modificar_usuario():
     email = input("Ingrese el nuevo email del usuario: ")
     data = f"{rut},{nombre},{email}"
     response = send_message("USUAR", "CODMU", data)
-    print(f"Datos del usuario de RUT: {rut} han sido modificados")
+    if response == "USUAROKNK, Acción inválida":
+        print("Error al modificar usuario")
+    else:
+        print(f"Datos del usuario de RUT: {rut} han sido modificados")
+    
 
 def obtener_info_usuario(rut):
     if not validar_rut(rut):
@@ -221,14 +241,20 @@ def obtener_info_todos_usuarios():
 def añadir_alimento(nombre, precio, stock):
     data = f"{nombre},{precio},{stock}"
     response = send_message("ALIME", "CODAA", data)
-    print(f"Alimento: {nombre} ha sido añadido")
+    if response == "ALIMEOKNK, Acción inválida":
+        print("Error al añadir alimento")
+    else: 
+        print(f"Alimento: {nombre} ha sido añadido")
 
 def eliminar_alimento(id_alimento):
     if not validar_id(id_alimento):
         print("Error: El ID debe ser un número entero.")
         return
     response = send_message("ALIME", "CODEA", str(id_alimento))
-    print(f"Alimento de ID: {id_alimento} ha sido eliminado")
+    if response == "ALIMEOKNK, Acción inválida":
+        print("Error al eliminar alimento")
+    else:
+        print(f"Alimento de ID: {id_alimento} ha sido eliminado")
 
 def modificar_alimento(id_alimento, nombre, precio, stock):
     if not validar_id(id_alimento):
@@ -236,7 +262,10 @@ def modificar_alimento(id_alimento, nombre, precio, stock):
         return
     data = f"{id_alimento},{nombre},{precio},{stock}"
     response = send_message("ALIME", "CODMA", data)
-    print(f"Los datos del alimento de ID: {id_alimento} han sido modificados")
+    if response == "ALIMEOKNK, Acción inválida":
+        print("Error al modificar alimento")
+    else:
+        print(f"Los datos del alimento de ID: {id_alimento} han sido modificados")
 
 def obtener_info_alimento(id_alimento):
     if not validar_id(id_alimento):
@@ -485,14 +514,20 @@ def añadir_juego(nombre, descripcion, id_equipo):
         return
     data = f"{nombre},{descripcion},{id_equipo}"
     response = send_message("JUEGO", "CODAJ", data)
-    print(f"Juego: {nombre} ha sido añadido con ID: {response.split(',')[1]}")
+    if response == "JUEGOOKNK, Acción inválida":
+        print("Error al añadir juego")
+    else:
+        print(f"Juego: {nombre} ha sido añadido con ID: {response.split(',')[1]}")
 
 def eliminar_juego(id_juego):
     if not validar_id(id_juego):
         print("Error: El ID del juego debe ser un número entero.")
         return
     response = send_message("JUEGO", "CODEJ", str(id_juego))
-    print(f"Juego de ID: {id_juego} ha sido eliminado")
+    if response == "JUEGOOKNK, Acción inválida":
+        print("Error al eliminar juego")
+    else:
+        print(f"Juego de ID: {id_juego} ha sido eliminado")
 
 def modificar_juego(id_juego, nombre, descripcion, id_equipo):
     if not validar_id(id_juego):
@@ -503,7 +538,10 @@ def modificar_juego(id_juego, nombre, descripcion, id_equipo):
         return
     data = f"{id_juego},{nombre},{descripcion},{id_equipo}"
     response = send_message("JUEGO", "CODMJ", data)
-    print(f"Datos del juego de ID: {id_juego} han sido modificados")
+    if response == "JUEGOOKNK, Acción inválida":
+        print("Error al modificar juego")
+    else:
+        print(f"Datos del juego de ID: {id_juego} han sido modificados")
 
 def obtener_info_juego(id_juego):
     if not validar_id(id_juego):

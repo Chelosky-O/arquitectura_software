@@ -60,6 +60,9 @@ def eliminar_usuario(rut):
         query = f"DELETE FROM Usuarios WHERE rut='{rut}'"
         cursor.execute(query)
         db_connection.commit()
+        # Comprobar si se eliminó algún registro
+        if cursor.rowcount == 0:
+            return "ERROR, No se encontró el equipo con el ID especificado"
         return "USUAROK,Usuario eliminado"
     except mysql.connector.Error as err:
         return f"USUARNK, Error: {err}"

@@ -41,10 +41,14 @@ def añadir_juego(payload):
         query = f"INSERT INTO Juegos (nombre, descripcion, id_equipo) VALUES ('{nombre}', '{descripcion}', {id_equipo})"
         cursor.execute(query)
         db_connection.commit()
-        return f"JUEGOOK,{cursor.lastrowid}"
+        response = f"JUEGOOK,{cursor.lastrowid}"
+    except mysql.connector.Error as e:
+        # Manejo de errores
+        response = f"ERROR,{str(e)}"
     finally:
         cursor.close()
         db_connection.close()
+        return response
 
 def eliminar_juego(id_juego):
     try:
@@ -59,6 +63,9 @@ def eliminar_juego(id_juego):
         query = f"DELETE FROM Juegos WHERE id={id_juego}"
         cursor.execute(query)
         db_connection.commit()
+        # Comprobar si se eliminó algún registro
+        if cursor.rowcount == 0:
+            return "ERROR, No se encontró el equipo con el ID especificado"
         return "JUEGOOK, Juego eliminado"
     finally:
         cursor.close()
@@ -78,7 +85,12 @@ def modificar_juego(payload):
         query = f"UPDATE Juegos SET nombre='{nombre}', descripcion='{descripcion}', id_equipo={id_equipo} WHERE id={id_juego}"
         cursor.execute(query)
         db_connection.commit()
-        return "JUEGOOK, Juego modificado"
+
+        response = f"JUEGOOK, Juego modificado"
+        return response
+    except mysql.connector.Error as e:
+        # Manejo de errores
+        response = f"ERROR,{str(e)}"
     finally:
         cursor.close()
         db_connection.close()

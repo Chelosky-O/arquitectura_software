@@ -60,6 +60,8 @@ def eliminar_alimento(id_alimento):
         query = f"DELETE FROM Alimentos WHERE id={id_alimento}"
         cursor.execute(query)
         db_connection.commit()
+        if cursor.rowcount == 0:
+            return "ERROR, No se encontró el equipo con el ID especificado"
         return "ALIMEOK, Alimento eliminado"
     except mysql.connector.Error as err:
         return f"ALIMENK, Error: {err}"
