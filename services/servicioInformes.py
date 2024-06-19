@@ -34,7 +34,7 @@ def generar_informe_ganancia_equipos():
         query = "SELECT tipo, SUM(Arriendos.monto) FROM Arriendos JOIN Equipos ON Arriendos.id_equipo = Equipos.id GROUP BY tipo"
         cursor.execute(query)
         results = cursor.fetchall()
-        print(results)
+        #print(results)
         montos_por_tipo = "|".join([f"{row[0]},{row[1]}" for row in results])
         monto_total = sum(row[1] for row in results)
         response = f"INFOROK,{montos_por_tipo},{monto_total}"

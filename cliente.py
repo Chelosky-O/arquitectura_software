@@ -428,87 +428,93 @@ def generar_excel_ganancia_equipos():
         print("Error al generar el informe: ", response_parts[1])
 
 def generar_excel_uso_equipos():
-    response = send_message("INFOR", "CODGU", "")
-    response_parts = response.split(',', 1)
-    if response_parts[0] == "INFOROKOK":
-        uso_equipos = response_parts[1].split('|')
-        
-        fecha_actual = datetime.now().strftime("%Y-%m-%d")
-        folder_path = os.path.join(base_directory, fecha_actual)
-        os.makedirs(folder_path, exist_ok=True)
-        
-        file_name = f"uso_equipos.xlsx"
-        file_path = os.path.join(folder_path, file_name)
-        
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "Uso Equipos"
-        
-        header_fill = PatternFill(start_color="92D050", end_color="92D050", fill_type="solid")
-        header_font = Font(color="FFFFFF", bold=True)
-        cell_alignment = Alignment(horizontal="center", vertical="center")
-        
-        ws.append(["ID Equipo", "Nombre", "Tiempo de Uso", "Monto Total"])
-        for equipo in uso_equipos:
-            id_equipo, nombre, tiempo, monto = equipo.split(',')
-            ws.append([id_equipo, nombre, float(tiempo), float(monto)])  
-        
-        for row in ws.iter_rows(min_row=1, max_row=1):
-            for cell in row:
-                cell.fill = header_fill
-                cell.font = header_font
-                cell.alignment = cell_alignment
-        
-        ws.column_dimensions['A'].width = 12
-        ws.column_dimensions['B'].width = 20
-        ws.column_dimensions['C'].width = 15
-        ws.column_dimensions['D'].width = 15
-        
-        wb.save(file_path)
-        print(f"Informe de uso de equipos generado: {file_path}")
-    else:
-        print("Error al generar el informe: ", response_parts[1])
+    try:
+        response = send_message("INFOR", "CODGU", "")
+        response_parts = response.split(',', 1)
+        if response_parts[0] == "INFOROKOK":
+            uso_equipos = response_parts[1].split('|')
+            
+            fecha_actual = datetime.now().strftime("%Y-%m-%d")
+            folder_path = os.path.join(base_directory, fecha_actual)
+            os.makedirs(folder_path, exist_ok=True)
+            
+            file_name = f"uso_equipos.xlsx"
+            file_path = os.path.join(folder_path, file_name)
+            
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = "Uso Equipos"
+            
+            header_fill = PatternFill(start_color="92D050", end_color="92D050", fill_type="solid")
+            header_font = Font(color="FFFFFF", bold=True)
+            cell_alignment = Alignment(horizontal="center", vertical="center")
+            
+            ws.append(["ID Equipo", "Nombre", "Tiempo de Uso", "Monto Total"])
+            for equipo in uso_equipos:
+                id_equipo, nombre, tiempo, monto = equipo.split(',')
+                ws.append([id_equipo, nombre, float(tiempo), float(monto)])  
+            
+            for row in ws.iter_rows(min_row=1, max_row=1):
+                for cell in row:
+                    cell.fill = header_fill
+                    cell.font = header_font
+                    cell.alignment = cell_alignment
+            
+            ws.column_dimensions['A'].width = 12
+            ws.column_dimensions['B'].width = 20
+            ws.column_dimensions['C'].width = 15
+            ws.column_dimensions['D'].width = 15
+            
+            wb.save(file_path)
+            print(f"Informe de uso de equipos generado: {file_path}")
+        else:
+            print("Error al generar el informe: ", response_parts[1])
+    except Exception as e:
+        print(f"Error: {e}")
 
 def generar_excel_ventas_alimentos():
-    response = send_message("INFOR", "CODGV", "")
-    response_parts = response.split(',', 1)
-    if response_parts[0] == "INFOROKOK":
-        ventas_alimentos = response_parts[1].split('|')
-        
-        fecha_actual = datetime.now().strftime("%Y-%m-%d")
-        folder_path = os.path.join(base_directory, fecha_actual)
-        os.makedirs(folder_path, exist_ok=True)
-        
-        file_name = f"ventas_alimentos.xlsx"
-        file_path = os.path.join(folder_path, file_name)
-        
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "Ventas Alimentos"
-        
-        header_fill = PatternFill(start_color="FFC000", end_color="FFC000", fill_type="solid")
-        header_font = Font(color="FFFFFF", bold=True)
-        cell_alignment = Alignment(horizontal="center", vertical="center")
-        
-        ws.append(["ID Alimento", "Nombre", "Monto"])
-        for alimento in ventas_alimentos:
-            subpartes = alimento.split(',')
-            ws.append([subpartes[0], subpartes[1], float(subpartes[2])])  
-        
-        for row in ws.iter_rows(min_row=1, max_row=1):
-            for cell in row:
-                cell.fill = header_fill
-                cell.font = header_font
-                cell.alignment = cell_alignment
-        
-        ws.column_dimensions['A'].width = 12
-        ws.column_dimensions['B'].width = 20
-        ws.column_dimensions['C'].width = 15
-        
-        wb.save(file_path)
-        print(f"Informe de ventas de alimentos generado: {file_path}")
-    else:
-        print("Error al generar el informe: ", response_parts[1])
+    try:
+        response = send_message("INFOR", "CODGV", "")
+        response_parts = response.split(',', 1)
+        if response_parts[0] == "INFOROKOK":
+            ventas_alimentos = response_parts[1].split('|')
+            
+            fecha_actual = datetime.now().strftime("%Y-%m-%d")
+            folder_path = os.path.join(base_directory, fecha_actual)
+            os.makedirs(folder_path, exist_ok=True)
+            
+            file_name = f"ventas_alimentos.xlsx"
+            file_path = os.path.join(folder_path, file_name)
+            
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = "Ventas Alimentos"
+            
+            header_fill = PatternFill(start_color="FFC000", end_color="FFC000", fill_type="solid")
+            header_font = Font(color="FFFFFF", bold=True)
+            cell_alignment = Alignment(horizontal="center", vertical="center")
+            
+            ws.append(["ID Alimento", "Nombre", "Monto"])
+            for alimento in ventas_alimentos:
+                subpartes = alimento.split(',')
+                ws.append([subpartes[0], subpartes[1], float(subpartes[2])])  
+            
+            for row in ws.iter_rows(min_row=1, max_row=1):
+                for cell in row:
+                    cell.fill = header_fill
+                    cell.font = header_font
+                    cell.alignment = cell_alignment
+            
+            ws.column_dimensions['A'].width = 12
+            ws.column_dimensions['B'].width = 20
+            ws.column_dimensions['C'].width = 15
+            
+            wb.save(file_path)
+            print(f"Informe de ventas de alimentos generado: {file_path}")
+        else:
+            print("Error al generar el informe: ", response_parts[1])
+    except Exception as e:
+        print(f"Error: {e}")
 
 # Funciones para la gestión de juegos
 def añadir_juego(nombre, descripcion, id_equipo):
