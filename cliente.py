@@ -317,6 +317,9 @@ def arrendar_equipo(rut_usuario, id_equipo, tiempo_arriendo):
     if not validar_id(id_equipo):
         print("Error: El ID del equipo debe ser un número entero.")
         return
+    if not tiempo_arriendo.isdigit():
+        print("Error: El tiempo de arriendo debe ser un número entero.")
+        return
     
     data = f"{rut_usuario},{id_equipo},{tiempo_arriendo}"
     response = send_message("ARRIE", "CODAE", data)
@@ -328,7 +331,7 @@ def arrendar_equipo(rut_usuario, id_equipo, tiempo_arriendo):
         print(f"¡Arriendo exitoso! Usuario: {rut_usuario} - Equipo: {id_equipo}")
         print(f"Fecha inicio: {fecha} - Fecha final: {fecha_fin} - Monto: {monto}")
     else:
-        print("Error: ", response_parts[1])
+        print("Error: ", response_parts)
 
 # Funciones para la venta de alimentos
 def vender_alimento(rut_usuario, nombre_alimento, cantidad):
